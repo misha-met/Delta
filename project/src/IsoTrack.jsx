@@ -2,7 +2,7 @@
 // Supports: rotate, zoom, driver labels toggle,
 // safety car deployment animation, clickable cars.
 
-const { TEAMS, DRIVERS, COMPOUNDS } = window.APEX;
+const { TEAMS, DRIVERS, COMPOUNDS } = window.DELTA;
 const FALLBACK_TEAM_COLOR = "#9AA3B2";
 
 // Bounding box of the circuit → viewport
@@ -210,8 +210,8 @@ function IsoTrack({
   const [hover, setHover] = React.useState(null);
 
   // Memoize geometry derivations against CIRCUIT.length so they recompute when snapshot arrives
-  const CIRCUIT = window.APEX.CIRCUIT;
-  const SECTORS = window.APEX.SECTORS;
+  const CIRCUIT = window.DELTA.CIRCUIT;
+  const SECTORS = window.DELTA.SECTORS;
   const geoKey = CIRCUIT.length;
   const { B, CIRCUIT_EXTENT, S, PAD, VB_W, VB_H, OX, OY, CENTROID } = React.useMemo(
     () => computeDerived(CIRCUIT),

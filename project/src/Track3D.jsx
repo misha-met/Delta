@@ -509,40 +509,44 @@ function Track3D({
   liveRef.current = { standings, pinned, secondary, cameraMode, weather, showLabels, safetyCar };
   // Expose HUD toggle on window so the hotkey handler can reach it.
   React.useEffect(() => {
+    window.DELTA_HUD_TOGGLE = hudToggleRef;
     window.APEX_HUD_TOGGLE = hudToggleRef;
-    return () => { delete window.APEX_HUD_TOGGLE; };
+    return () => {
+      delete window.DELTA_HUD_TOGGLE;
+      delete window.APEX_HUD_TOGGLE;
+    };
   }, []);
   // Rebuild scene when the circuit changes (TOD preset is baked at setup).
   const todKey = detectTimeOfDay(circuitName);
 
-  const [geoVersion, setGeoVersion] = React.useState(() => window.APEX?.geometryVersion || 0);
+  const [geoVersion, setGeoVersion] = React.useState(() => window.DELTA?.geometryVersion || 0);
   React.useEffect(() => {
     const onGeometryVersion = (e) => {
-      setGeoVersion(e.detail?.version ?? (window.APEX?.geometryVersion || 0));
+      setGeoVersion(e.detail?.version ?? (window.DELTA?.geometryVersion || 0));
     };
-    window.addEventListener("apex:geometry-version", onGeometryVersion);
-    return () => window.removeEventListener("apex:geometry-version", onGeometryVersion);
+    window.addEventListener("delta:geometry-version", onGeometryVersion);
+    return () => window.removeEventListener("delta:geometry-version", onGeometryVersion);
   }, []);
 
   const [qualityVersion, setQualityVersion] = React.useState(0);
   React.useEffect(() => {
-    if (!window.APEX.QUALITY) window.APEX.QUALITY = "high";
-    window.APEX.setQuality = (name) => {
+    if (!window.DELTA.QUALITY) window.DELTA.QUALITY = "high";
+    window.DELTA.setQuality = (name) => {
       if (!QUALITY_PRESETS[name]) return;
-      window.APEX.QUALITY = name;
+      window.DELTA.QUALITY = name;
       setQualityVersion((v) => v + 1);
     };
-    return () => { delete window.APEX.setQuality; };
+    return () => { delete window.DELTA.setQuality; };
   }, []);
 
   React.useEffect(() => {
     const mount = mountRef.current;
     if (!mount) return;
-    const circuit = window.APEX.CIRCUIT;
+    const circuit = window.DELTA.CIRCUIT;
     if (circuit.length < 2) return;
 
     // --- Quality preset ---
-    const qp = QUALITY_PRESETS[window.APEX.QUALITY] || QUALITY_PRESETS.high;
+    const qp = QUALITY_PRESETS[window.DELTA.QUALITY] || QUALITY_PRESETS.high;
 
     // --- Scene + lights ---
     const preset = TOD_PRESETS[todKey] || TOD_PRESETS.day;
@@ -550,9 +554,10 @@ function Track3D({
     const debugLayerColors = search.get("trackDebug") === "1";
     const disableToneMapping = search.get("trackToneMap") === "off";
     const showTrackHelpers = search.get("trackHelpers") === "1";
-    const bridgeSkirtTune = sanitizeBridgeSkirtTune(window.APEX?.BRIDGE_SKIRT_TUNE || DEFAULT_BRIDGE_SKIRT_TUNE);
-    if (!window.APEX) window.APEX = {};
-    window.APEX.BRIDGE_SKIRT_TUNE = bridgeSkirtTune;
+    const bridgeSkirtTune = sanitizeBridgeSkirtTune(window.DELTA?.BRIDGE_SKIRT_TUNE || DEFAULT_BRIDGE_SKIRT_TUNE);
+    if (!window.DELTA) window.DELTA = window.APEX || {};
+    window.DELTA.BRIDGE_SKIRT_TUNE = bridgeSkirtTune;
+    window.APEX = window.DELTA;
     const runoffDryColor = debugLayerColors ? 0x0060ff : preset.runoff.color;
     const runoffWetColor = debugLayerColors ? runoffDryColor : mulHexLumaFloor(preset.runoff.color, WET_OVERLAY.runoffDarken, 56);
     const trackDryColor = debugLayerColors ? 0xff00ff : preset.trackTint;
@@ -1128,7 +1133,7 @@ function Track3D({
     }
 
     // DRS zones — green stripes on the outer side of each zone.
-    for (const z of window.APEX.DRS_ZONES || []) {
+    for (const z of window.DELTA.DRS_ZONES || []) {
       const u = Math.max(0, Math.min(1, z.startIdx / Math.max(1, circuit.length - 1)));
       for (const side of [+1, -1]) {
         const m = buildDRSZoneMesh(curve, segments, circuit.length, z, side);
@@ -1154,7 +1159,7 @@ function Track3D({
     }
 
     if (!disableOuterDecor) {
-      for (const sector of window.APEX.SECTORS || []) {
+      for (const sector of window.DELTA.SECTORS || []) {
         if (sector.idx == null) continue;
         const u = Math.max(0, Math.min(1, sector.idx / Math.max(1, circuit.length - 1)));
         for (const side of [+1, -1]) {
@@ -1167,7 +1172,7 @@ function Track3D({
     // Sector boundary gates are disabled by default in 3D because they can
     // read as intrusive cross-track bars at wide camera distances.
     if (showTrackHelpers) {
-      for (const s of window.APEX.SECTORS || []) {
+      for (const s of window.DELTA.SECTORS || []) {
         if (s.idx == null) continue;
         const g = buildSectorGate(curve, circuit.length, s.idx, s.color || "#f4f4f8");
         g.position.y = ABOVE_TRACK(0.40, 0.04);
@@ -1619,11 +1624,11 @@ function Track3D({
       const live = liveRef.current;
 
       // Sample interpolated standings if available and enabled
-      const renderDelay = window.APEX?.RENDER_DELAY_MS ?? 220;
+      const renderDelay = window.DELTA?.RENDER_DELAY_MS ?? 220;
       const tRender = now - renderDelay;
       let standings;
-      if (window.APEX?.INTERPOLATE !== false && window.APEX.sampleStandingsAt) {
-        standings = window.APEX.sampleStandingsAt(tRender) || live.standings || [];
+      if (window.DELTA?.INTERPOLATE !== false && window.DELTA.sampleStandingsAt) {
+        standings = window.DELTA.sampleStandingsAt(tRender) || live.standings || [];
       } else {
         standings = live.standings || [];
       }
@@ -1635,10 +1640,10 @@ function Track3D({
         seen.add(s.driver.code);
         let entry = driverMap.get(s.driver.code);
         if (!entry) {
-          const g = makeDriverMarker(window.APEX.TEAMS[s.driver.team]);
+          const g = makeDriverMarker(window.DELTA.TEAMS[s.driver.team]);
           g.userData.driverCode = s.driver.code;
           driverGroup.add(g);
-          const teamColor = window.APEX.TEAMS[s.driver.team]?.color || "#ff1e00";
+          const teamColor = window.DELTA.TEAMS[s.driver.team]?.color || "#ff1e00";
           const label = makeLabel(s.driver.code, teamColor);
           setLabelStatus(label, s.labelStatus ?? s.label_status, s.statusReason ?? s.status_reason);
           labelLayer.appendChild(label);
@@ -1707,7 +1712,7 @@ function Track3D({
         entry.group.userData.drsMat.opacity = s.in_drs ? 0.95 : 0.0;
 
         // Tyre compound colour on the small bobble above the car.
-        const compInfo = window.APEX.COMPOUNDS[s.compound] || { color: "#ffd93a" };
+        const compInfo = window.DELTA.COMPOUNDS[s.compound] || { color: "#ffd93a" };
         entry.group.userData.compound.material.color.set(compInfo.color);
 
         // Wheel spin — fake it from speed so the wheels rotate convincingly.
@@ -1859,7 +1864,7 @@ function Track3D({
           camera.lookAt(chase.look);
           controls.enabled = false;
           updatePovHud(povHud, pinnedStanding,
-            window.APEX.COMPOUNDS[pinnedStanding.compound]);
+            window.DELTA.COMPOUNDS[pinnedStanding.compound]);
           // Speed → vignette: subtle hint of velocity rather than a tunnel.
           // Smoothstep through the meaningful 150–300 kph band.
           const sNorm = Math.max(0, Math.min(1, (chaseSpeedKph - 80) / 240));
@@ -1989,10 +1994,10 @@ function Track3D({
             const snap = snapshotRef.current;
             const teamColor =
               snap?.driver_meta?.[pinnedCode]?.team_colour ||
-              window.APEX?.TEAMS?.[standing.driver?.team]?.color ||
+              window.DELTA?.TEAMS?.[standing.driver?.team]?.color ||
               "#FF1E00";
             // The standings array in the RAF loop comes from
-            // window.APEX.sampleStandingsAt (interpolated for smooth motion),
+            // window.DELTA.sampleStandingsAt (interpolated for smooth motion),
             // NOT from computeStandings. The interpolated objects preserve
             // the raw snake_case frame fields (last_lap_s, best_lap_s, gear,
             // rpm, throttle_pct, brake_pct, in_drs, in_pit, ...) and add a
@@ -2028,7 +2033,7 @@ function Track3D({
             // displayed (lastLap or fallback bestLap) against session/PB.
             const displayedS = (lastLapMode === "LAST") ? lastLapS : bestLapS;
             let lapTag = "";
-            const sb = window.APEX?.SESSION_BEST?.lap_s;
+            const sb = window.DELTA?.SESSION_BEST?.lap_s;
             if (Number.isFinite(sb) && Number.isFinite(displayedS) && displayedS > 0 && Math.abs(displayedS - sb) < 0.0005) {
               lapTag = "session_best";
             } else if (Number.isFinite(pbLapS) && Number.isFinite(displayedS) && displayedS > 0 && Math.abs(displayedS - pbLapS) < 0.0005) {

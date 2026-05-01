@@ -16,7 +16,7 @@ _LOCK = threading.Lock()
 
 
 def timing_enabled() -> bool:
-    return os.getenv("APEX_TIMING", "0") == "1"
+    return os.getenv("DELTA_TIMING", os.getenv("APEX_TIMING", "0")) == "1"
 
 
 def now_utc_iso() -> str:
@@ -26,7 +26,7 @@ def now_utc_iso() -> str:
 def log(message: str) -> None:
     if not timing_enabled():
         return
-    sys.stderr.write(f"[APEX_TIMING] {message}\n")
+    sys.stderr.write(f"[DELTA_TIMING] {message}\n")
     sys.stderr.flush()
 
 

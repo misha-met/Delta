@@ -41,7 +41,7 @@ const ctx = await esbuild.context({
   // All files assign to window.XXX explicitly, so the IIFE wrapper
   // doesn't need to export anything. We just need the side-effects.
   footer: {
-    js: "// side-effects only — window.APEX, window.LIVE, etc.",
+    js: "// side-effects only — window.DELTA, window.LIVE, etc.",
   },
   minify: !isWatch,
   sourcemap: isWatch,

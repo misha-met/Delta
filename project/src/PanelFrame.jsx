@@ -9,12 +9,13 @@
 // Pop-out:   renders panel body into a separate browser window via portal.
 // Hidden:    slot renders nothing; user restores via the Panels menu.
 
-const PANEL_LAYOUT_KEY = "apex.panelLayout.v1";
+const PANEL_LAYOUT_KEY = "delta.panelLayout.v1";
+const LEGACY_PANEL_LAYOUT_KEY = "apex.panelLayout.v1";
 const PANEL_POPOUT_FEATURES = "popup,width=600,height=400";
 
 function loadLayout() {
   try {
-    const raw = localStorage.getItem(PANEL_LAYOUT_KEY);
+    const raw = localStorage.getItem(PANEL_LAYOUT_KEY) || localStorage.getItem(LEGACY_PANEL_LAYOUT_KEY);
     if (!raw) return {};
     const parsed = JSON.parse(raw);
     return parsed && typeof parsed === "object" ? parsed : {};
@@ -55,22 +56,22 @@ function cloneHeadStyles(sourceDoc, targetDoc) {
 
 function ensurePopoutRoot(popoutWindow, title) {
   const doc = popoutWindow.document;
-  doc.title = `${title} · APEX`;
+  doc.title = `${title} · DELTA`;
 
   cloneHeadStyles(document, doc);
 
-  let baseStyle = doc.getElementById("apex-popout-base-style");
+  let baseStyle = doc.getElementById("delta-popout-base-style");
   if (!baseStyle) {
     baseStyle = doc.createElement("style");
-    baseStyle.id = "apex-popout-base-style";
-    baseStyle.textContent = "html, body, #apex-popout-root { height: 100%; margin: 0; } body { background: #05050A; overflow: hidden; }";
+    baseStyle.id = "delta-popout-base-style";
+    baseStyle.textContent = "html, body, #delta-popout-root { height: 100%; margin: 0; } body { background: #05050A; overflow: hidden; }";
     doc.head.appendChild(baseStyle);
   }
 
-  let root = doc.getElementById("apex-popout-root");
+  let root = doc.getElementById("delta-popout-root");
   if (!root) {
     root = doc.createElement("div");
-    root.id = "apex-popout-root";
+    root.id = "delta-popout-root";
     doc.body.textContent = "";
     doc.body.appendChild(root);
   }
@@ -188,7 +189,7 @@ function CollapsedStub({ title, onExpand }) {
   return (
     <div
       onClick={onExpand}
-      className="apex-panel-mount"
+      className="delta-panel-mount"
       style={{
         height: 28,
         display: "flex",

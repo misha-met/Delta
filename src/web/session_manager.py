@@ -54,7 +54,7 @@ class SessionManager:
         cache_meta_path = web_cache_meta_path(cache_path)
         force_rebuild = (
             "--refresh-data" in sys.argv
-            or os.getenv("APEX_FORCE_WEB_CACHE_REBUILD", "0") == "1"
+            or os.getenv("DELTA_FORCE_WEB_CACHE_REBUILD", os.getenv("APEX_FORCE_WEB_CACHE_REBUILD", "0")) == "1"
         )
 
         load_started = time.perf_counter()

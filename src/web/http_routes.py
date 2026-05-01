@@ -47,7 +47,7 @@ def session_status():
 
 @router.get("/debug/ws_stats")
 def debug_ws_stats(request: Request):
-    if os.getenv("APEX_DEBUG", "0") != "1":
+    if os.getenv("DELTA_DEBUG", os.getenv("APEX_DEBUG", "0")) != "1":
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Not found")
     hub = request.app.state.ws_hub

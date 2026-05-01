@@ -1,6 +1,6 @@
 // Top bar, timeline, controls, tweaks.
 
-const { SECTORS } = window.APEX;
+const { SECTORS } = window.DELTA;
 
 function TopBar({ session, lap, totalLaps, clock, weather, flagState, safetyCar, extras, leading }) {
   const T = window.THEME;
@@ -24,7 +24,7 @@ function TopBar({ session, lap, totalLaps, clock, weather, flagState, safetyCar,
             <path d="M2 18 L8 4 L14 4 L10 12 L20 12 L18 18 Z" fill={T.hot}/>
           </svg>
           <div>
-            <div style={{ fontSize: T.fs.sm, fontWeight: 800, color: T.text, letterSpacing: T.ls.wide }}>APEX · PITWALL</div>
+            <div style={{ fontSize: T.fs.sm, fontWeight: 800, color: T.text, letterSpacing: T.ls.wide }}>DELTA · PITWALL</div>
             <div style={{ fontSize: 8, color: T.textDim, letterSpacing: T.ls.wide }}>RACE ENGINEER CONSOLE</div>
           </div>
         </div>
@@ -79,7 +79,7 @@ function LiveDot() {
   return (
     <div style={{ position: "relative", width: 8, height: 8 }}>
       <div style={{ position: "absolute", inset: 0, borderRadius: 4, background: T.good }}/>
-      <div style={{ position: "absolute", inset: -3, borderRadius: 7, background: T.good, opacity: 0.3, animation: "apexpulse 1.6s infinite" }}/>
+      <div style={{ position: "absolute", inset: -3, borderRadius: 7, background: T.good, opacity: 0.3, animation: "deltaPulse 1.6s infinite" }}/>
     </div>
   );
 }
@@ -332,7 +332,7 @@ function CameraControls({
   setMiniMapVisible,
 }) {
   const T = window.THEME;
-  const [quality, setQuality] = React.useState(() => window.APEX?.QUALITY || "high");
+  const [quality, setQuality] = React.useState(() => window.DELTA?.QUALITY || "high");
   const isTop = viewMode === "top";
   if (collapsed) {
     return (
@@ -421,7 +421,7 @@ function CameraControls({
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4 }}>
             {["low", "med", "high"].map((q) => (
               <button key={q} onClick={() => {
-                window.APEX.setQuality?.(q);
+                window.DELTA.setQuality?.(q);
                 setQuality(q);
               }} style={{
                 padding: "4px 2px",

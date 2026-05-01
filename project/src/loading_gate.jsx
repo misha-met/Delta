@@ -3,10 +3,11 @@ function LoadingGate({ children }) {
   const [poll, setPoll] = React.useState(null);
   const [dataReady, setDataReady] = React.useState(false);
 
-  // Wait for APEX bootstrap data (summary + geometry fetch)
+  // Wait for DELTA bootstrap data (summary + geometry fetch)
   React.useEffect(() => {
-    if (window.APEX_DATA_READY) {
-      window.APEX_DATA_READY.then(() => setDataReady(true));
+    const dataReadyPromise = window.DELTA_DATA_READY || window.APEX_DATA_READY;
+    if (dataReadyPromise) {
+      dataReadyPromise.then(() => setDataReady(true));
     } else {
       setDataReady(true); // legacy path if promise not present
     }
@@ -19,7 +20,7 @@ function LoadingGate({ children }) {
     const tick = async () => {
       if (!alive) return;
       try {
-        const s = await window.APEX_CLIENT.get("/api/session/status");
+        const s = await window.DELTA_CLIENT.get("/api/session/status");
         if (alive) setPoll(s);
       } catch {}
     };

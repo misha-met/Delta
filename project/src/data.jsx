@@ -1,4 +1,4 @@
-// Live data shim — populates window.APEX from the backend.
+// Live data shim — populates window.DELTA from the backend.
 // Async bootstrap fetches CIRCUIT/TEAMS/DRIVERS without blocking paint.
 // Fallbacks are installed immediately so components can destructure safely;
 // real data mutates the same objects in-place once fetched.
@@ -13,7 +13,7 @@ async function asyncFetch(path) {
   return null;
 }
 
-// --- Compound int → APEX key mapping ---
+// --- Compound int → DELTA key mapping ---
 const COMPOUND_MAP = { 0: "S", 1: "M", 2: "H", 3: "I", 4: "W" };
 
 // --- TEAMS (mutable — colors updated from WS snapshot) ---
@@ -60,9 +60,9 @@ function _detectUnitScale(circuit) {
 
 function _publishGeometryUpdate() {
   GEOMETRY_VERSION += 1;
-  window.dispatchEvent(new CustomEvent("apex:geometry-version", {
-    detail: { version: GEOMETRY_VERSION },
-  }));
+  const detail = { version: GEOMETRY_VERSION };
+  window.dispatchEvent(new CustomEvent("delta:geometry-version", { detail }));
+  window.dispatchEvent(new CustomEvent("apex:geometry-version", { detail }));
 }
 
 function _installGeometry(geo) {
@@ -110,9 +110,9 @@ function _installGeometry(geo) {
 
 // --- Populate from summary / geometry (async, non-blocking) ---
 let _dataResolved;
-const APEX_DATA_READY = new Promise((resolve) => { _dataResolved = resolve; });
+const DELTA_DATA_READY = new Promise((resolve) => { _dataResolved = resolve; });
 
-async function _initAPEX() {
+async function _initDELTA() {
   const [_summary, _geometry] = await Promise.all([
     asyncFetch("/api/session/summary"),
     asyncFetch("/api/session/geometry"),
@@ -156,7 +156,7 @@ async function _initAPEX() {
   _dataResolved();
 }
 
-_initAPEX();
+_initDELTA();
 
 
 const COMPOUNDS = {
@@ -299,7 +299,7 @@ async function fetchLapTrace(code, lap) {
   if (window.__LAP_TRACE_INFLIGHT[key]) return window.__LAP_TRACE_INFLIGHT[key];
   const p = (async () => {
     try {
-      const data = await window.APEX_CLIENT.get(`/api/session/lap_telemetry/${encodeURIComponent(code)}/${lap}`);
+      const data = await window.DELTA_CLIENT.get(`/api/session/lap_telemetry/${encodeURIComponent(code)}/${lap}`);
       if (data && Array.isArray(data.fraction) && data.fraction.length >= 2) {
         window.__LAP_TRACE_CACHE[key] = data;
         return data;
@@ -595,7 +595,7 @@ function enrichStandingsWithDrivers(standings) {
   return out;
 }
 
-window.APEX = {
+window.DELTA = {
   TEAMS, DRIVERS, COMPOUNDS, CIRCUIT, SECTORS, DRS_ZONES,
   get UNIT_SCALE() { return UNIT_SCALE; },
   get geometryVersion() { return GEOMETRY_VERSION; },
@@ -610,4 +610,6 @@ window.APEX = {
   // frame lands late. Higher = smoother but more lagged. Tunable at runtime.
   RENDER_DELAY_MS: 220,
 };
-window.APEX_DATA_READY = APEX_DATA_READY;
+window.APEX = window.DELTA;
+window.DELTA_DATA_READY = DELTA_DATA_READY;
+window.APEX_DATA_READY = DELTA_DATA_READY;

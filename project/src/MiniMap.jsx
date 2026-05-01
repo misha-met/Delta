@@ -2,21 +2,21 @@
 // view loses field context. Pure SVG — track centerline + per-frame driver
 // pips. Click a pip to pin the driver, shift-click to compare.
 
-const { TEAMS: MM_TEAMS, CIRCUIT: MM_CIRCUIT } = window.APEX;
+const { TEAMS: MM_TEAMS, CIRCUIT: MM_CIRCUIT } = window.DELTA;
 const MM_FALLBACK = "#9AA3B2";
 
 function MiniMap({ standings, pinned, secondary, onPickDriver, width = 168 }) {
   const T = window.THEME;
-  const [geomVer, setGeomVer] = React.useState(() => window.APEX?.geometryVersion || 0);
+  const [geomVer, setGeomVer] = React.useState(() => window.DELTA?.geometryVersion || 0);
 
   React.useEffect(() => {
-    const onVer = (e) => setGeomVer(e.detail?.version ?? (window.APEX?.geometryVersion || 0));
-    window.addEventListener("apex:geometry-version", onVer);
-    return () => window.removeEventListener("apex:geometry-version", onVer);
+    const onVer = (e) => setGeomVer(e.detail?.version ?? (window.DELTA?.geometryVersion || 0));
+    window.addEventListener("delta:geometry-version", onVer);
+    return () => window.removeEventListener("delta:geometry-version", onVer);
   }, []);
 
   const view = React.useMemo(() => {
-    const C = window.APEX.CIRCUIT;
+    const C = window.DELTA.CIRCUIT;
     if (!C?.length) return null;
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     for (const p of C) {
@@ -29,7 +29,7 @@ function MiniMap({ standings, pinned, secondary, onPickDriver, width = 168 }) {
   }, [geomVer]);
 
   const pathD = React.useMemo(() => {
-    const C = window.APEX.CIRCUIT;
+    const C = window.DELTA.CIRCUIT;
     if (!C?.length) return "";
     let d = `M ${C[0].x} ${C[0].y}`;
     for (let i = 1; i < C.length; i++) d += ` L ${C[i].x} ${C[i].y}`;
@@ -79,7 +79,7 @@ function MiniMap({ standings, pinned, secondary, onPickDriver, width = 168 }) {
           <path d={pathD} fill="none" stroke="rgba(180,180,200,0.5)" strokeWidth={stroke} strokeLinejoin="round"/>
           {standings.map((s) => {
             if (s.status === "OUT") return null;
-            const p = window.APEX.CIRCUIT[s.trackIdx];
+            const p = window.DELTA.CIRCUIT[s.trackIdx];
             if (!p) return null;
             const team = MM_TEAMS[s.driver.team];
             const color = team?.color || MM_FALLBACK;

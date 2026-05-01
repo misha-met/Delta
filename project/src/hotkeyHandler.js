@@ -55,4 +55,5 @@ function buildHotkeyHandler(refs, post, togglePlay, seekRemote, setSpeedRemote, 
   };
 }
 
-window.APEX_HOTKEY = { buildHotkeyHandler, SPEED_STEPS };
+window.DELTA_HOTKEY = { buildHotkeyHandler, SPEED_STEPS };
+window.APEX_HOTKEY = window.DELTA_HOTKEY;

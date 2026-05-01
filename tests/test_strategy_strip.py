@@ -199,7 +199,7 @@ COMPOUNDS = {
 
 
 def test_compound_key_mapping():
-    """Every compound string from fastf1 must map to a valid APEX key."""
+    """Every compound string from fastf1 must map to a valid DELTA key."""
     for compound_str in ["SOFT", "MEDIUM", "HARD", "INTERMEDIATE", "WET"]:
         key = COMPOUND_KEY[compound_str]
         assert key in COMPOUNDS, f"COMPOUND_KEY['{compound_str}'] = '{key}' not in COMPOUNDS"

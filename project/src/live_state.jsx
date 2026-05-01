@@ -16,12 +16,12 @@ function LiveProvider({ children }) {
     let lastReactUpdateT = 0;
     const REACT_FRAME_THROTTLE_MS = 50;
 
-    const h = window.APEX_CLIENT.openSocket((msg) => {
+    const h = window.DELTA_CLIENT.openSocket((msg) => {
       if (msg.type === "loading") {
         setLoading({ status: msg.status || "loading", progress: msg.progress || 0, message: msg.message });
       } else if (msg.type === "snapshot" || msg.type === "reset") {
         setLoading({ status: "ready", progress: 100 });
-        if (window.APEX?.clearLapTelemetry) window.APEX.clearLapTelemetry();
+        if (window.DELTA?.clearLapTelemetry) window.DELTA.clearLapTelemetry();
         window.__LIVE_BUFFER?.clear?.();
         lastFrameT = null;
         setSnap(msg);
@@ -29,8 +29,8 @@ function LiveProvider({ children }) {
         setRcHistory([...(msg.race_control_history || [])].sort((a, b) => (a.time || 0) - (b.time || 0)));
         if (msg.track_statuses) setTrackStatuses(msg.track_statuses);
         if (msg.playback) setPb(msg.playback);
-        // Install snapshot data into APEX shim (colors, driver meta)
-        if (window.APEX?._installSnapshot) window.APEX._installSnapshot(msg);
+        // Install snapshot data into the DELTA shim (colors, driver meta)
+        if (window.DELTA?._installSnapshot) window.DELTA._installSnapshot(msg);
         // Also treat snapshot as first frame
         if (msg.standings?.length) {
           const snapT = msg.t_seconds ?? (msg.frame_index || 0);
@@ -58,7 +58,7 @@ function LiveProvider({ children }) {
           };
           window.__LIVE_FRAME = snapFrame;
           window.__LIVE_BUFFER?.push?.(snapFrame);
-          if (window.APEX?._accumulateFrame) window.APEX._accumulateFrame(snapFrame);
+          if (window.DELTA?._accumulateFrame) window.DELTA._accumulateFrame(snapFrame);
           lastFrameT = snapT;
           wasPaused = true;
           setFrame(snapFrame);
@@ -75,7 +75,7 @@ function LiveProvider({ children }) {
 
         window.__LIVE_FRAME = msg;
         window.__LIVE_BUFFER?.push?.(msg);
-        if (window.APEX?._accumulateFrame) window.APEX._accumulateFrame(msg);
+        if (window.DELTA?._accumulateFrame) window.DELTA._accumulateFrame(msg);
 
         // Throttle React updates to ~20Hz except on pause/seek transitions
         const now = performance.now();

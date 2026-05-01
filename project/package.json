@@ -1,5 +1,5 @@
 {
-  "name": "apex-pitwall",
+  "name": "delta-pitwall",
   "private": true,
   "scripts": {
     "build": "node build.mjs",

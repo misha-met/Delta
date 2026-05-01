@@ -1,6 +1,6 @@
 // Telemetry panels — right rail + driver card + compare view.
 
-const { TEAMS, COMPOUNDS, DRIVERS, lapTrace } = window.APEX;
+const { TEAMS, COMPOUNDS, DRIVERS, lapTrace } = window.DELTA;
 const FALLBACK_TEAM_COLOR = "#9AA3B2";
 const FALLBACK_COMPOUND = { label: "MEDIUM", color: "#FFD93A" };
 
@@ -9,7 +9,7 @@ function DriverCard({ code, data, accent, secondary = false, standings = [] }) {
   const a = accent || T.accent;
   if (!code) {
     return (
-      <div className="apex-panel-mount" style={{
+      <div className="delta-panel-mount" style={{
         padding: 16, minHeight: 120,
         fontFamily: T.mono,
         fontSize: T.fs.sm, color: T.textFaint,
@@ -24,7 +24,7 @@ function DriverCard({ code, data, accent, secondary = false, standings = [] }) {
   const d = DRIVERS.find((x) => x.code === code);
   if (!d) {
     return (
-      <div className="apex-panel-mount" style={{
+      <div className="delta-panel-mount" style={{
         padding: 16, minHeight: 120,
         fontFamily: T.mono,
         fontSize: T.fs.sm, color: T.textFaint,
@@ -44,7 +44,7 @@ function DriverCard({ code, data, accent, secondary = false, standings = [] }) {
   const compoundKey = live?.compound || "M";
   const compound = COMPOUNDS[compoundKey] || COMPOUNDS.M || FALLBACK_COMPOUND;
   return (
-    <div className="apex-panel-mount" style={{
+    <div className="delta-panel-mount" style={{
       background: T.surface,
       border: secondary ? T.borderCool : T.borderHot,
       position: "relative",
@@ -226,8 +226,8 @@ function CompareTraces({ pinned, secondary, lap, channel = "speed", setChannel, 
   // On resolve, bump a tick to force recomputation of the memoized traces.
   const [cacheTick, setCacheTick] = React.useState(0);
   React.useEffect(() => {
-    const fetchFn = window.APEX?.fetchLapTrace;
-    const getCached = window.APEX?.getCachedLapTrace;
+    const fetchFn = window.DELTA?.fetchLapTrace;
+    const getCached = window.DELTA?.getCachedLapTrace;
     if (!fetchFn || !getCached) return;
     let cancelled = false;
     for (const c of codes) {
@@ -311,7 +311,7 @@ function CompareTraces({ pinned, secondary, lap, channel = "speed", setChannel, 
   }, [deltaData, iw]);
 
   return (
-    <div className="apex-panel-mount" style={{
+    <div className="delta-panel-mount" style={{
       background: T.surface,
       border: T.border,
       overflow: "hidden",
@@ -456,7 +456,7 @@ function SectorTimes({ pinned, secondary, lap, standings }) {
   const T = window.THEME;
   const primary = standings.find(s => s.driver.code === pinned);
   const secondaryEntry = standings.find(s => s.driver.code === secondary);
-  const best = window.APEX.getSessionBest();
+  const best = window.DELTA.getSessionBest();
 
   const fmtSector = (val) => {
     if (val == null || val === 0) return "--:---";
@@ -477,7 +477,7 @@ function SectorTimes({ pinned, secondary, lap, standings }) {
   };
 
   return (
-    <div className="apex-panel-mount" style={{
+    <div className="delta-panel-mount" style={{
       background: T.surface,
       border: T.border,
     }}>

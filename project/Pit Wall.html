@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Apex GP · Pit Wall</title>
+<title>Delta Pitwall</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -26,7 +26,7 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); }
   ::-webkit-scrollbar-thumb:hover { background: rgba(255,30,0,0.3); }
-  @keyframes apexpulse {
+  @keyframes deltaPulse {
     0% { transform: scale(1); opacity: 0.5; }
     100% { transform: scale(2.2); opacity: 0; }
   }
@@ -34,19 +34,19 @@
     0% { transform: translateY(-100%); }
     100% { transform: translateY(100%); }
   }
-  @keyframes apex-panel-in {
+  @keyframes delta-panel-in {
     from { opacity: 0; transform: translateY(4px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  @keyframes apex-row-pulse {
+  @keyframes delta-row-pulse {
     0%   { background-color: rgba(255,30,0,0.22); }
     100% { background-color: rgba(255,30,0,0); }
   }
-  @keyframes apex-flag-glow-yellow {
+  @keyframes delta-flag-glow-yellow {
     0%, 100% { box-shadow: inset 0 0 0 1px rgba(255,184,0,0.55), inset 0 0 40px rgba(255,184,0,0.12); }
     50%      { box-shadow: inset 0 0 0 1px rgba(255,184,0,0.8),  inset 0 0 60px rgba(255,184,0,0.22); }
   }
-  @keyframes apex-flag-glow-red {
+  @keyframes delta-flag-glow-red {
     0%, 100% { box-shadow: inset 0 0 0 2px rgba(255,30,0,0.7),  inset 0 0 50px rgba(255,30,0,0.18); }
     50%      { box-shadow: inset 0 0 0 2px rgba(255,30,0,0.95), inset 0 0 80px rgba(255,30,0,0.32); }
   }
@@ -55,20 +55,20 @@
     background: linear-gradient(180deg, transparent, rgba(255,30,0,0.06) 50%, transparent);
     animation: scan 8s linear infinite;
   }
-  .apex-panel-mount { animation: apex-panel-in 120ms ease-out both; }
-  .apex-row { transition: background-color 60ms linear, border-color 60ms linear; }
-  .apex-row-pulse { animation: apex-row-pulse 450ms ease-out; }
-  .apex-flag-layer {
+  .delta-panel-mount { animation: delta-panel-in 120ms ease-out both; }
+  .delta-row { transition: background-color 60ms linear, border-color 60ms linear; }
+  .delta-row-pulse { animation: delta-row-pulse 450ms ease-out; }
+  .delta-flag-layer {
     position: absolute; inset: 0; pointer-events: none; z-index: 2;
     transition: box-shadow 200ms ease;
   }
-  .apex-flag-layer.yellow, .apex-flag-layer.sc, .apex-flag-layer.vsc {
-    animation: apex-flag-glow-yellow 2.2s ease-in-out infinite;
+  .delta-flag-layer.yellow, .delta-flag-layer.sc, .delta-flag-layer.vsc {
+    animation: delta-flag-glow-yellow 2.2s ease-in-out infinite;
   }
-  .apex-flag-layer.red {
-    animation: apex-flag-glow-red 1.1s ease-in-out infinite;
+  .delta-flag-layer.red {
+    animation: delta-flag-glow-red 1.1s ease-in-out infinite;
   }
-  .apex-sector-bar-fill { transition: width 60ms linear, background-color 120ms ease; }
+  .delta-sector-bar-fill { transition: width 60ms linear, background-color 120ms ease; }
   button:focus { outline: none; }
   input[type=range] { -webkit-appearance: none; background: rgba(255,255,255,0.06); height: 2px; }
   input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; background: #FF1E00; border: 0; cursor: pointer; }

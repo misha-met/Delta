@@ -818,8 +818,8 @@ def get_race_telemetry(session, session_type="R", include_frames=True):
     pickle_path = Path("computed_data") / f"{event_name}_{cache_suffix}_telemetry.pkl"
     arrow_path = Path("computed_data") / f"{event_name}_{session_tag}.arrow"
     refresh_requested = "--refresh-data" in sys.argv
-    use_legacy_cache = os.getenv("APEX_USE_LEGACY_CACHE", "0") == "1"
-    write_legacy_pickle = os.getenv("APEX_WRITE_LEGACY_PICKLE", "0") == "1"
+    use_legacy_cache = os.getenv("DELTA_USE_LEGACY_CACHE", os.getenv("APEX_USE_LEGACY_CACHE", "0")) == "1"
+    write_legacy_pickle = os.getenv("DELTA_WRITE_LEGACY_PICKLE", os.getenv("APEX_WRITE_LEGACY_PICKLE", "0")) == "1"
 
     from src.data.race_store import (
         RaceHandle,

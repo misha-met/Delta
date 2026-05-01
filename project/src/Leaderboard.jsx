@@ -1,6 +1,6 @@
 // Leaderboard — left rail. Engineer-dense.
 
-const { TEAMS, COMPOUNDS } = window.APEX;
+const { TEAMS, COMPOUNDS } = window.DELTA;
 const FALLBACK_TEAM_COLOR = "#9AA3B2";
 const FALLBACK_COMPOUND = { label: "MEDIUM", color: "#FFD93A" };
 
@@ -39,7 +39,7 @@ function sectorOf(fraction) {
 function Leaderboard({ standings, pinned, secondary, onPick, onShiftPick, bestLapCode }) {
   const T = window.THEME;
   return (
-    <div className="apex-panel-mount" style={{
+    <div className="delta-panel-mount" style={{
       background: T.surface,
       border: T.border,
       borderRadius: 2,
@@ -104,10 +104,10 @@ function LeaderboardRow({ s, pinned, secondary, bestLapCode, onPick, onShiftPick
       lastSectorRef.current = cur;
       if (isPinned && rowRef.current) {
         const el = rowRef.current;
-        el.classList.remove("apex-row-pulse");
+        el.classList.remove("delta-row-pulse");
         // force reflow so animation restarts
         void el.offsetWidth;
-        el.classList.add("apex-row-pulse");
+        el.classList.add("delta-row-pulse");
       }
     }
   }, [s.fraction, isPinned]);
@@ -119,7 +119,7 @@ function LeaderboardRow({ s, pinned, secondary, bestLapCode, onPick, onShiftPick
   return (
     <div
       ref={rowRef}
-      className="apex-row"
+      className="delta-row"
       onClick={(e) => {
         if (isOut) return;
         if (e.shiftKey) onShiftPick(s.driver.code);
@@ -163,7 +163,7 @@ function LeaderboardRow({ s, pinned, secondary, bestLapCode, onPick, onShiftPick
             position: "relative",
           }}>
             <div
-              className="apex-sector-bar-fill"
+              className="delta-sector-bar-fill"
               style={{
                 position: "absolute", left: 0, top: 0, bottom: 0,
                 width: `${Math.max(0, Math.min(1, frac)) * 100}%`,

@@ -103,7 +103,7 @@ function paintWheelHudPlaceholder(ctx) {
   ctx.font = 'bold 28px "JetBrains Mono", monospace';
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText("APEX • PITWALL", WHEEL_HUD_W / 2, WHEEL_HUD_H / 2);
+  ctx.fillText("DELTA • PITWALL", WHEEL_HUD_W / 2, WHEEL_HUD_H / 2);
 }
 
 function paintWheelHud(ctx, d) {

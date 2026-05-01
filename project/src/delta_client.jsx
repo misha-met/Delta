@@ -1,4 +1,4 @@
-// Thin HTTP + WS client. Exposes window.APEX_CLIENT.
+// Thin HTTP + WS client. Exposes window.DELTA_CLIENT.
 const BASE = `${location.protocol}//${location.host}`;
 const WS_BASE = (location.protocol === "https:" ? "wss:" : "ws:") + "//" + location.host;
 
@@ -48,4 +48,5 @@ function openSocket(onMessage) {
   return { close: () => ws && ws.close() };
 }
 
-window.APEX_CLIENT = { get, post, openSocket };
+window.DELTA_CLIENT = { get, post, openSocket };
+window.APEX_CLIENT = window.DELTA_CLIENT;

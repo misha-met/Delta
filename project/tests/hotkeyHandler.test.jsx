@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// hotkeyHandler.js assigns to window.APEX_HOTKEY — import side-effects only
+// hotkeyHandler.js assigns to window.DELTA_HOTKEY — import side-effects only
 import "../src/hotkeyHandler.js";
-const { buildHotkeyHandler } = window.APEX_HOTKEY;
+const { buildHotkeyHandler } = window.DELTA_HOTKEY;
 
 // ── Helpers ──
 

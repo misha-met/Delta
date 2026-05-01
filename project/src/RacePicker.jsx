@@ -3,7 +3,7 @@
 // loading_gate.jsx which already owns the loading overlay + transition.
 
 const TH = window.THEME;
-const APEX = window.APEX_CLIENT;
+const CLIENT = window.DELTA_CLIENT;
 
 const SESSION_TYPES = [
   { id: "R",  label: "RACE",         long: "LOAD RACE" },
@@ -94,7 +94,7 @@ function RacePickerHeader({ onOpenSearch }) {
         fontFamily: TH.mono, fontSize: TH.fs.lg, fontWeight: 800,
         color: TH.textStrong, letterSpacing: TH.ls.wide,
       }}>
-        APEX · PITWALL
+        DELTA · PITWALL
       </div>
       <div style={{ flex: 1 }}/>
       <button onClick={onOpenSearch} style={{
@@ -338,7 +338,7 @@ function RoundCard({
         opacity: isFuture ? 0.55 : (isDisabled && !isLoading ? 0.5 : 1),
         fontFamily: TH.mono,
         color: TH.text,
-        animation: "apex-panel-in 120ms ease both",
+        animation: "delta-panel-in 120ms ease both",
         transition: "border-color 120ms ease, background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
         transform: hover && interactive ? "translateY(-1px)" : "none",
         boxShadow: hover && interactive
@@ -431,7 +431,7 @@ function RoundCard({
                 display: "inline-block", width: 9, height: 9,
                 border: `2px solid ${TH.hot}`, borderRightColor: "transparent",
                 borderRadius: "50%",
-                animation: "apex-spin 0.7s linear infinite",
+                animation: "delta-spin 0.7s linear infinite",
               }}/>
               STARTING…
             </>
@@ -630,7 +630,7 @@ function RacePicker({ onLoadStarted }) {
   // Seasons
   React.useEffect(() => {
     let alive = true;
-    APEX.get("/api/seasons").then((res) => {
+    CLIENT.get("/api/seasons").then((res) => {
       if (!alive) return;
       const ys = (res?.seasons || []).slice().sort((a, b) => b - a);
       setSeasonsState({ loading: false, error: null, years: ys });
@@ -645,7 +645,7 @@ function RacePicker({ onLoadStarted }) {
   // Cache index — single fetch
   React.useEffect(() => {
     let alive = true;
-    APEX.get("/api/web_cache/index").then((res) => {
+    CLIENT.get("/api/web_cache/index").then((res) => {
       if (!alive) return;
       const set = new Set();
       for (const e of (res?.entries || [])) {
@@ -665,7 +665,7 @@ function RacePicker({ onLoadStarted }) {
     setLoadingYears((prev) => {
       const next = new Set(prev); next.add(y); return next;
     });
-    APEX.get(`/api/seasons/${y}/rounds`).then((res) => {
+    CLIENT.get(`/api/seasons/${y}/rounds`).then((res) => {
       const list = res && res.error
         ? []
         : (Array.isArray(res) ? res : (res?.rounds || []));
@@ -734,7 +734,7 @@ function RacePicker({ onLoadStarted }) {
     if (cls.state === "future") return;
     setSelecting(round.round_number);
     try {
-      await APEX.post("/api/session/load", {
+      await CLIENT.post("/api/session/load", {
         year, round: round.round_number, session_type: sessionType,
       });
       if (onLoadStarted) onLoadStarted({ year, round: round.round_number, session_type: sessionType });
@@ -754,7 +754,7 @@ function RacePicker({ onLoadStarted }) {
     if (selecting != null) return;
     setSelecting(round.round_number);
     try {
-      await APEX.post("/api/session/load", {
+      await CLIENT.post("/api/session/load", {
         year: pickYear, round: round.round_number, session_type: sessionType,
       });
       if (onLoadStarted) onLoadStarted({ year: pickYear, round: round.round_number, session_type: sessionType });
@@ -864,7 +864,7 @@ function RacePicker({ onLoadStarted }) {
       )}
 
       <style>{`
-        @keyframes apex-spin {
+        @keyframes delta-spin {
           from { transform: rotate(0deg); }
           to   { transform: rotate(360deg); }
         }

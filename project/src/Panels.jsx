@@ -1,6 +1,6 @@
 // Right-side panels: tyre strategy, pit predictor, ghost radar, etc.
 
-const { TEAMS, COMPOUNDS, DRIVERS, getStints, getPitStops } = window.APEX;
+const { TEAMS, COMPOUNDS, DRIVERS, getStints, getPitStops } = window.DELTA;
 const FALLBACK_TEAM_COLOR = "#9AA3B2";
 const FALLBACK_COMPOUND_COLOR = "#FFD93A";
 
@@ -9,7 +9,7 @@ function isOutOfPlayStanding(s) {
   return s?.status === "OUT" || badge === "RET" || badge === "ACC";
 }
 
-// Map fastf1 compound strings → APEX keys
+// Map fastf1 compound strings → DELTA keys
 const COMPOUND_KEY = {
   SOFT: "S", MEDIUM: "M", HARD: "H",
   INTERMEDIATE: "I", WET: "W", UNKNOWN: "M",
@@ -20,7 +20,7 @@ function StrategyStrip({ standings, totalLaps, lap }) {
   const T = window.THEME;
   const top = standings.slice(0, 10);
   return (
-    <div className="apex-panel-mount" style={{
+    <div className="delta-panel-mount" style={{
       background: T.surface,
       border: T.border,
       overflow: "hidden",
@@ -105,7 +105,7 @@ function GapViz({ standings, pinned }) {
   const top = running.slice(0, 10);
   const maxGap = Math.max(...top.map((s) => s.gap ?? 0), 1);
   return (
-    <div className="apex-panel-mount" style={{
+    <div className="delta-panel-mount" style={{
       background: T.surface,
       border: T.border,
     }}>
@@ -161,7 +161,7 @@ function GapHistory({ pinned, secondary, onPick, onShiftPick, lap }) {
     let timer = null;
     const tryFetch = () => {
       if (cancelled) return;
-      window.APEX_CLIENT.get("/api/session/gap_to_leader")
+      window.DELTA_CLIENT.get("/api/session/gap_to_leader")
         .then((res) => {
           if (cancelled) return;
           setData(res);
@@ -218,8 +218,8 @@ function GapHistory({ pinned, secondary, onPick, onShiftPick, lap }) {
     }
     const lns = data.drivers.map((drv) => {
       const code = drv.code;
-      const dEntry = (window.APEX.DRIVERS || []).find((x) => x.code === code);
-      const team = dEntry ? window.APEX.TEAMS[dEntry.team] : null;
+      const dEntry = (window.DELTA.DRIVERS || []).find((x) => x.code === code);
+      const team = dEntry ? window.DELTA.TEAMS[dEntry.team] : null;
       const color = team?.color || FALLBACK_TEAM_COLOR;
       const pts = [];
       for (let i = 0; i < drv.gaps.length; i++) {
@@ -307,7 +307,7 @@ function GapHistory({ pinned, secondary, onPick, onShiftPick, lap }) {
     : null;
 
   return (
-    <div className="apex-panel-mount" style={{
+    <div className="delta-panel-mount" style={{
       background: T.surface,
       border: T.border,
       display: "flex", flexDirection: "column",
@@ -420,7 +420,7 @@ function GapHistory({ pinned, secondary, onPick, onShiftPick, lap }) {
 function RaceFeed({ events }) {
   const T = window.THEME;
   return (
-    <div className="apex-panel-mount" style={{
+    <div className="delta-panel-mount" style={{
       background: T.surface,
       border: T.border,
       display: "flex", flexDirection: "column",

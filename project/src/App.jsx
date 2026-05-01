@@ -1,7 +1,7 @@
 // Top-level app — stitches it all together.
 
-const { DRIVERS, TEAMS, CIRCUIT, computeStandings, telemetryFor } = window.APEX;
-const { buildHotkeyHandler } = window.APEX_HOTKEY;
+const { DRIVERS, TEAMS, CIRCUIT, computeStandings, telemetryFor } = window.DELTA;
+const { buildHotkeyHandler } = window.DELTA_HOTKEY;
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "accent": "#FF1E00",
@@ -55,7 +55,7 @@ function App() {
   const SESSION = {
     event: ev ? `${ev.year} · R${ev.round} · ${ev.event_name}` : "LOADING...",
     name: "RACE",
-    circuit: ev ? [ev.circuit_name, snapshot?.geometry?.total_length_m ? ((snapshot.geometry.total_length_m * window.APEX.UNIT_SCALE) / 1000).toFixed(3) + "KM" : ""].filter(Boolean).join(" · ") : "",
+    circuit: ev ? [ev.circuit_name, snapshot?.geometry?.total_length_m ? ((snapshot.geometry.total_length_m * window.DELTA.UNIT_SCALE) / 1000).toFixed(3) + "KM" : ""].filter(Boolean).join(" · ") : "",
   };
 
   // Selections
@@ -76,7 +76,7 @@ function App() {
   // View mode: "webgl" (Three.js 3D), "follow" (WebGL chase cam), "iso" (legacy SVG 3D),
   // or "top" (2D top-down). Persist across reloads. Default = webgl.
   const [viewMode, setViewModeRaw] = React.useState(() => {
-    try { return localStorage.getItem("apex.viewMode") || "webgl"; } catch { return "webgl"; }
+    try { return localStorage.getItem("delta.viewMode") || localStorage.getItem("apex.viewMode") || "webgl"; } catch { return "webgl"; }
   });
   const setViewMode = React.useCallback((mode) => {
     setViewModeRaw(mode);
@@ -89,7 +89,7 @@ function App() {
     }
   }, []);
   React.useEffect(() => {
-    try { localStorage.setItem("apex.viewMode", viewMode); } catch {}
+    try { localStorage.setItem("delta.viewMode", viewMode); } catch {}
   }, [viewMode]);
   // Sync initial collapse state on first load.
   React.useEffect(() => {
@@ -99,20 +99,25 @@ function App() {
   // Toggles
   const [showLabels, setShowLabels] = React.useState(true);
   const [miniMapVisible, setMiniMapVisible] = React.useState(() => {
-    try { return localStorage.getItem("apex.miniMapVisible") === "1"; } catch { return false; }
+    try {
+      const stored = localStorage.getItem("delta.miniMapVisible");
+      return stored != null ? stored === "1" : localStorage.getItem("apex.miniMapVisible") === "1";
+    } catch {
+      return false;
+    }
   });
   React.useEffect(() => {
-    try { localStorage.setItem("apex.miniMapVisible", miniMapVisible ? "1" : "0"); } catch {}
+    try { localStorage.setItem("delta.miniMapVisible", miniMapVisible ? "1" : "0"); } catch {}
   }, [miniMapVisible]);
   const [compareChannel, setCompareChannel] = React.useState("speed");
-  const [geometryVersion, setGeometryVersion] = React.useState(() => window.APEX?.geometryVersion || 0);
+  const [geometryVersion, setGeometryVersion] = React.useState(() => window.DELTA?.geometryVersion || 0);
 
   React.useEffect(() => {
     const onGeometryVersion = (e) => {
-      setGeometryVersion(e.detail?.version ?? (window.APEX?.geometryVersion || 0));
+      setGeometryVersion(e.detail?.version ?? (window.DELTA?.geometryVersion || 0));
     };
-    window.addEventListener("apex:geometry-version", onGeometryVersion);
-    return () => window.removeEventListener("apex:geometry-version", onGeometryVersion);
+    window.addEventListener("delta:geometry-version", onGeometryVersion);
+    return () => window.removeEventListener("delta:geometry-version", onGeometryVersion);
   }, []);
 
   // Arc-length cache for CIRCUIT so safety-car mapping doesn't rebuild O(n)
@@ -136,14 +141,14 @@ function App() {
 
   // Playback controls → POST to server
   const togglePlay = () => {
-    if (isPaused) window.APEX_CLIENT.post("/api/playback/play");
-    else window.APEX_CLIENT.post("/api/playback/pause");
+    if (isPaused) window.DELTA_CLIENT.post("/api/playback/play");
+    else window.DELTA_CLIENT.post("/api/playback/pause");
   };
   const setSpeedRemote = (s) => {
-    window.APEX_CLIENT.post("/api/playback/speed", { speed: s });
+    window.DELTA_CLIENT.post("/api/playback/speed", { speed: s });
   };
   const seekRemote = (tVal) => {
-    window.APEX_CLIENT.post("/api/playback/seek", { t: tVal });
+    window.DELTA_CLIENT.post("/api/playback/seek", { t: tVal });
   };
 
   // Refs for stable hotkey handler (avoids re-subscribing every frame)
@@ -158,14 +163,14 @@ function App() {
   React.useEffect(() => {
     const onKey = buildHotkeyHandler(
       { t: tRef, speed: speedRef, isPaused: isPausedRef },
-      window.APEX_CLIENT.post.bind(window.APEX_CLIENT),
+      window.DELTA_CLIENT.post.bind(window.DELTA_CLIENT),
       togglePlay,
       seekRemote,
       setSpeedRemote,
       setShowLabels,
       setViewMode,
       () => setCameraControlsCollapsed((v) => !v),
-      () => { if (window.APEX_HUD_TOGGLE?.current) window.APEX_HUD_TOGGLE.current(); },
+      () => { if (window.DELTA_HUD_TOGGLE?.current) window.DELTA_HUD_TOGGLE.current(); },
       () => setMiniMapVisible((v) => !v),
     );
     window.addEventListener("keydown", onKey);
@@ -346,7 +351,7 @@ function App() {
             : flagState === "vsc" ? "vsc"
             : flagState === "yellow" ? "yellow"
             : null;
-          return cls ? <div className={`apex-flag-layer ${cls}`}/> : null;
+          return cls ? <div className={`delta-flag-layer ${cls}`}/> : null;
         })()}
         {/* Corner HUD (top-left) */}
         <div style={{
@@ -379,7 +384,7 @@ function App() {
             </div>
           </div>
           <div style={{ fontSize: 10, color: "rgba(180,180,200,0.55)", letterSpacing: "0.1em" }}>
-            {snapshot?.geometry?.total_length_m ? `${((snapshot.geometry.total_length_m * window.APEX.UNIT_SCALE) / 1000).toFixed(3)}KM` : ""}
+            {snapshot?.geometry?.total_length_m ? `${((snapshot.geometry.total_length_m * window.DELTA.UNIT_SCALE) / 1000).toFixed(3)}KM` : ""}
           </div>
         </div>
 
@@ -535,8 +540,8 @@ function App() {
         flagState={flagState}
         safetyCar={!!safetyCar}
         leading={
-          window.APEX_CHANGE_RACE ? (
-            <button onClick={() => window.APEX_CHANGE_RACE && window.APEX_CHANGE_RACE()} style={{
+          window.DELTA_CHANGE_RACE ? (
+            <button onClick={() => window.DELTA_CHANGE_RACE && window.DELTA_CHANGE_RACE()} style={{
               padding: "5px 9px",
               background: "rgba(255,30,0,0.08)",
               border: "1px solid rgba(255,30,0,0.45)",
@@ -705,7 +710,7 @@ function AppRoot() {
     let timer = null;
     const tick = async () => {
       try {
-        const s = await window.APEX_CLIENT.get("/api/session/status");
+        const s = await window.DELTA_CLIENT.get("/api/session/status");
         if (!alive) return;
         const st = s?.status;
         if (st === "loading" || st === "ready") setPhase("app");
@@ -723,11 +728,17 @@ function AppRoot() {
   // while the main app is mounted.
   React.useEffect(() => {
     if (phase !== "app") {
+      window.DELTA_CHANGE_RACE = null;
       window.APEX_CHANGE_RACE = null;
       return undefined;
     }
-    window.APEX_CHANGE_RACE = () => setPhase("picker");
-    return () => { window.APEX_CHANGE_RACE = null; };
+    const changeRace = () => setPhase("picker");
+    window.DELTA_CHANGE_RACE = changeRace;
+    window.APEX_CHANGE_RACE = changeRace;
+    return () => {
+      window.DELTA_CHANGE_RACE = null;
+      window.APEX_CHANGE_RACE = null;
+    };
   }, [phase]);
 
   if (phase === "checking") return null;
