@@ -8,11 +8,12 @@
 
 Delta Pitwall turns FastF1 session data into something that feels closer to a race-engineer desk than a stats page. Load a race, scrub through it, pin drivers, compare telemetry, inspect stint strategy, watch gaps evolve, and jump between wide circuit views and in-cockpit replay from the browser.
 
-This repository is focused on the web stack:
+The stack is a React frontend, a FastAPI + Uvicorn backend, and a cache-first data pipeline that writes deterministic Arrow snapshots — so cached races load instantly without re-fetching from FastF1.
 
-- a React frontend in `project/`
-- a FastAPI + Uvicorn backend in `src/web/`
-- a cache-first data pipeline that writes deterministic Arrow snapshots under `computed_data/web/v1/`
+## Prerequisites
+
+- Python 3.9+ — download and install from [python.org/downloads](https://www.python.org/downloads/)
+- Node.js 18+ — download and install from [nodejs.org/en/download](https://nodejs.org/en/download/)
 
 ## Feature Tour
 
@@ -23,7 +24,6 @@ This repository is focused on the web stack:
 - layout and view preferences persist in `localStorage`
 - top bar, timeline, and panel chrome give the app more of a replay console feel than a simple dashboard
 
-
 ### 3D Circuit Replay
 
 - Three.js circuit scene with weather-aware styling and GLB car and safety-car models
@@ -31,7 +31,7 @@ This repository is focused on the web stack:
 - floating labels, selection highlights, safety-car overlays, and an optional mini-map
 - a central replay view designed to feel live even when scrubbing through cached race data
 
-![3D circuit replay placeholder](docs/screenshots/webglslide-readme.png)
+![3D circuit replay](docs/screenshots/webglslide-readme.png)
 
 ### Cockpit POV
 
@@ -40,7 +40,7 @@ This repository is focused on the web stack:
 - built for the "inside the cockpit" moments that sell the replay immediately on GitHub
 - includes a tuning panel for HUD placement and emissive settings when you need to refine the look
 
-![Cockpit POV placeholder](docs/screenshots/cockpitslide-readme.png)
+![Cockpit POV](docs/screenshots/cockpitslide-readme.png)
 
 ### Classification and Driver Focus
 
@@ -49,10 +49,6 @@ This repository is focused on the web stack:
 - click a driver to pin them, `Shift + Click` to compare against a second driver
 - strong red/cyan selection language so the important comparison is obvious at a glance
 
-> Screenshot slot: `docs/screenshots/04-classification-driver-cards.png`  
-> Suggested capture: the leaderboard plus both driver cards with a primary and compare driver selected.
-![Classification and driver cards placeholder](docs/screenshots/04-classification-driver-cards.svg)
-
 ### Telemetry Compare
 
 - lap overlays for speed, throttle, brake, gear, and RPM
@@ -60,7 +56,7 @@ This repository is focused on the web stack:
 - sector times panel for quick split comparison
 - useful for showing where one driver gains, brakes later, or gets traction down earlier
 
-![Telemetry compare placeholder](docs/screenshots/traceslide-readme.png)
+![Telemetry compare](docs/screenshots/traceslide-readme.png)
 
 ### Strategy, Gaps, and the Spaghetti View
 
@@ -69,7 +65,7 @@ This repository is focused on the web stack:
 - gap-history spaghetti chart for the full race story over time
 - race-control feed layered into the same console for flags, safety car, DRS, and other key events
 
-![Strategy, gaps, and gap history placeholder](docs/screenshots/gapsslide-readme.png)
+![Strategy, gaps, and gap history](docs/screenshots/gapsslide-readme.png)
 
 ### Replay Timeline and Session Control
 
@@ -85,7 +81,7 @@ This repository is focused on the web stack:
 - warm cache loads skip a full FastF1 rebuild and jump straight into replay hydration
 - loading states make the data pipeline visible instead of feeling like a blank wait screen
 
-![RacePicker placeholder](docs/screenshots/racepickerslide-readme.png)
+![RacePicker](docs/screenshots/racepickerslide-readme.png)
 
 ## Panel Map
 
@@ -104,7 +100,7 @@ This repository is focused on the web stack:
 
 ## Quick Start
 
-> **First time only.** Run one script — it handles everything: checks prerequisites, creates a virtual environment, installs all Python and Node dependencies, builds the frontend bundle, and starts the server. On every run after the first it skips steps that are already done (no venv recreation, no npm install if `node_modules` exists, no rebuild if sources haven't changed).
+> **First time only.** Run one script — it handles everything: checks prerequisites, creates a virtual environment, installs all Python and Node dependencies, builds the frontend bundle, and starts the server. On every run after the first it skips steps that are already done.
 
 **macOS / Linux**
 
@@ -124,7 +120,7 @@ bash scripts/start.sh
 scripts\start.bat
 ```
 
-When the server is ready the URL is printed in the terminal — open it in your browser.
+When the server is ready the URL is printed in the terminal.
 
 Any CLI flags are passed straight through to the server:
 
@@ -350,9 +346,9 @@ That gives the UI a predictable loading flow:
 
 Source code in this repository is MIT-licensed. Third-party 3D assets are licensed separately:
 
-- `F1 2022 Generic` by [TheoDevF1](https://sketchfab.com/TheoDevF12), used under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/). Source: https://sketchfab.com/3d-models/f1-2022-generic-9b2fc584679e468ca3a7cb98a75857d2
-- `2019 Mercedes-Benz AMG GTR Safety Car` by [OUTPISTON](https://sketchfab.com/outpiston), used under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). Source: https://sketchfab.com/3d-models/2019-mercedes-benz-amg-gtr-safety-car-5bfaf6b31d084dde80dae723b52998bc
+- `F1 2022 Generic` by [TheoDevF1](https://sketchfab.com/TheoDevF12), used under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/). Source: [sketchfab.com](https://sketchfab.com/3d-models/f1-2022-generic-9b2fc584679e468ca3a7cb98a75857d2)
+- `2019 Mercedes-Benz AMG GTR Safety Car` by [OUTPISTON](https://sketchfab.com/outpiston), used under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). Source: [sketchfab.com](https://sketchfab.com/3d-models/2019-mercedes-benz-amg-gtr-safety-car-5bfaf6b31d084dde80dae723b52998bc)
 
 ## Attribution
 
-This standalone repository builds on the original FastF1 replay work from the upstream `f1-race-replay` lineage. The current version is focused on the browser console, cache pipeline, and 3D replay experience.
+This project builds on [Tom Shaw's f1-race-replay](https://github.com/IAmTomShaw/f1-race-replay). The current version extends it with a browser-based pit wall console, a deterministic Arrow cache pipeline, and a 3D WebGL replay experience.
