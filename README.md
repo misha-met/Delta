@@ -1,46 +1,133 @@
 <div align="center">
 
-# Delta Pitwall
-
-**A browser-based Formula 1 race-engineer console**  
-React 18 · Three.js · FastAPI · WebSocket · FastF1
-
-*A 10-panel dockable HUD for telemetry, strategy, classification, and 3D circuit replay — backed by a deterministic Arrow cache pipeline.*
+![Delta Pitwall Main](docs/screenshots/main_readme.png)
 
 </div>
 
-
 ## What It Is
 
-Delta Pitwall is a browser replay console for Formula 1 race data. It combines:
+Delta Pitwall turns FastF1 session data into something that feels closer to a race-engineer desk than a stats page. Load a race, scrub through it, pin drivers, compare telemetry, inspect stint strategy, watch gaps evolve, and jump between wide circuit views and in-cockpit replay from the browser.
 
-- a **React** frontend served from `project/`
-- a **FastAPI + Uvicorn** backend in `src/web/`
-- a **cache-first FastF1 pipeline** that writes deterministic Arrow snapshots under `computed_data/web/v1/`
+This repository is focused on the web stack:
 
-The desktop runtime from the original fork lineage has been removed from this repository, so this codebase now keeps only what the browser stack needs.
+- a React frontend in `project/`
+- a FastAPI + Uvicorn backend in `src/web/`
+- a cache-first data pipeline that writes deterministic Arrow snapshots under `computed_data/web/v1/`
 
-## Highlights
+## Feature Tour
 
-| Area | What you get |
+### Full Pit Wall Console
+
+- 10 dockable panels arranged across a three-rail desktop layout
+- panels can collapse, maximize, hide, and pop out into their own window
+- layout and view preferences persist in `localStorage`
+- top bar, timeline, and panel chrome give the app more of a replay console feel than a simple dashboard
+
+> Screenshot slot: `docs/screenshots/01-pitwall-overview.png`  
+> Suggested capture: the full desktop layout with classification, circuit view, strategy, and right-rail panels visible.
+![Delta Pitwall overview placeholder](docs/screenshots/01-pitwall-overview.svg)
+
+### 3D Circuit Replay
+
+- Three.js circuit scene with weather-aware styling and GLB car and safety-car models
+- orbit, chase, POV, top-down, and legacy IsoTrack views
+- floating labels, selection highlights, safety-car overlays, and an optional mini-map
+- a central replay view designed to feel live even when scrubbing through cached race data
+
+> Screenshot slot: `docs/screenshots/02-3d-circuit-view.png`  
+> Suggested capture: a wide circuit shot showing the track scene, labels, and right-side overlays.
+![3D circuit replay placeholder](docs/screenshots/02-3d-circuit-view.svg)
+
+### Cockpit POV
+
+- first-person mode from the pinned driver's car
+- live steering-wheel HUD with speed, gear, throttle, brake, DRS, tyre, lap, and flag information
+- built for the "inside the cockpit" moments that sell the replay immediately on GitHub
+- includes a tuning panel for HUD placement and emissive settings when you need to refine the look
+
+> Screenshot slot: `docs/screenshots/03-cockpit-pov.png`  
+> Suggested capture: a clean in-cockpit frame where the wheel HUD is easy to read.
+![Cockpit POV placeholder](docs/screenshots/03-cockpit-pov.svg)
+
+### Classification and Driver Focus
+
+- engineering-style timing tower with sector status, gaps, intervals, and lap colouring
+- primary and compare driver cards with speed, gear, throttle, brake, RPM, DRS, and tyre state
+- click a driver to pin them, `Shift + Click` to compare against a second driver
+- strong red/cyan selection language so the important comparison is obvious at a glance
+
+> Screenshot slot: `docs/screenshots/04-classification-driver-cards.png`  
+> Suggested capture: the leaderboard plus both driver cards with a primary and compare driver selected.
+![Classification and driver cards placeholder](docs/screenshots/04-classification-driver-cards.svg)
+
+### Telemetry Compare
+
+- lap overlays for speed, throttle, brake, gear, and RPM
+- live playhead so the traces move with replay progress instead of feeling static
+- sector times panel for quick split comparison
+- useful for showing where one driver gains, brakes later, or gets traction down earlier
+
+> Screenshot slot: `docs/screenshots/05-telemetry-compare.png`  
+> Suggested capture: compare traces with a visible playhead and sector-times panel beside it.
+![Telemetry compare placeholder](docs/screenshots/05-telemetry-compare.svg)
+
+### Strategy, Gaps, and the Spaghetti View
+
+- stint bars for the top 10 with compound colouring, pit-stop ticks, and current-lap marker
+- gap-to-leader bars for a fast read of race spread
+- gap-history spaghetti chart for the full race story over time
+- race-control feed layered into the same console for flags, safety car, DRS, and other key events
+
+> Screenshot slot: `docs/screenshots/06-strategy-gap-history.png`  
+> Suggested capture: the strategy strip, gap-to-leader panel, and spaghetti chart together.
+![Strategy, gaps, and gap history placeholder](docs/screenshots/06-strategy-gap-history.svg)
+
+### Replay Timeline and Session Control
+
+- play, pause, seek, and speed controls driven by a server-authoritative replay state
+- top bar with flag state, lap counter, race clock, air temperature, track temperature, and humidity
+- timeline overlays for laps, sectors, and safety-car periods
+- hotkeys for fast replay control and camera switching
+
+> Screenshot slot: `docs/screenshots/07-timeline-and-controls.png`  
+> Suggested capture: the bottom timeline with safety-car bands and the top session bar in the same frame.
+![Timeline and controls placeholder](docs/screenshots/07-timeline-and-controls.svg)
+
+### RacePicker and Warm Starts
+
+- built-in RacePicker flow for season, round, and session selection
+- cached races are surfaced quickly through the web-cache index
+- warm cache loads skip a full FastF1 rebuild and jump straight into replay hydration
+- loading states make the data pipeline visible instead of feeling like a blank wait screen
+
+> Screenshot slot: `docs/screenshots/08-race-picker.png`  
+> Suggested capture: the RacePicker grid or loading flow with cache-aware session selection.
+![RacePicker placeholder](docs/screenshots/08-race-picker.svg)
+
+## Panel Map
+
+| Panel | What it shows |
 |---|---|
-| **Console** | 10 dockable panels with collapse, maximize, hide, and pop-out behaviour |
-| **Rendering** | Three.js track scene with GLB car models, weather-aware styling, and quality presets |
-| **Views** | WebGL orbit, chase, POV, top-down, and legacy-style IsoTrack modes |
-| **Telemetry** | Live classification, lap telemetry lookups, compare traces, and track-status overlays |
-| **Strategy** | Stint bars, pit markers, gap-to-leader visualization, and gap-history charting |
-| **Replay** | Server-authoritative playback with play, pause, seek, and speed controls |
-| **Cache** | Warm-start Arrow cache reuse with schema validation and deterministic rebuilds |
-| **Picker** | RacePicker flow for season, round, and session selection without CLI setup |
+| `CLASSIFICATION` | Live race order, gaps, intervals, sector state, and lap colouring |
+| `CIRCUIT VIEW` | 3D track replay, chase/POV/top modes, labels, and overlays |
+| `STRATEGY` | Tyre stints, pit windows, and lap marker |
+| `COMPARE TRACES` | Speed, throttle, brake, gear, and RPM overlays |
+| `SECTOR TIMES` | Split-by-split comparison for selected drivers |
+| `RACE CONTROL` | Time-filtered race-control messages |
+| `PRIMARY DRIVER` | Detailed telemetry card for the pinned driver |
+| `COMPARE DRIVER` | Side-by-side telemetry card for the comparison driver |
+| `GAP VISUALIZATION` | Live gap-to-leader bars |
+| `GAP HISTORY` | Race-long spaghetti chart with pit markers and status overlays |
 
 ## Quick Start
-
-### macOS / Linux
 
 ```bash
 # 1. Create and activate a virtual environment
 python3 -m venv .venv
 source .venv/bin/activate
+
+# Windows PowerShell:
+# .venv\Scripts\Activate.ps1
 
 # 2. Install Python dependencies
 pip install -r requirements.txt
@@ -55,33 +142,21 @@ cd ..
 python -m src.web.pit_wall_server
 ```
 
-### Windows
-
-```bash
-python -m venv .venv
-.venv\\Scripts\\activate
-pip install -r requirements.txt
-cd project
-npm install
-npm run build
-cd ..
-python -m src.web.pit_wall_server
-```
-
 Open:
 
 ```text
 http://localhost:8000/app/Pit%20Wall.html
 ```
 
-If you start the server without `--year` and `--round`, the app opens into **RacePicker**.  
-If you already know the session you want:
+If you start the server without `--year` and `--round`, the app opens into `RacePicker`.
+
+If you want to jump straight into a known session:
 
 ```bash
 python -m src.web.pit_wall_server --year 2025 --round 12 --session-type R
 ```
 
-### CLI flags
+### CLI Flags
 
 | Flag | Default | Description |
 |---|---|---|
@@ -94,42 +169,53 @@ python -m src.web.pit_wall_server --year 2025 --round 12 --session-type R
 
 ## Development
 
-### Frontend dev loop
+Frontend watch mode:
 
 ```bash
 cd project
 npm run watch
 ```
 
-The bundle is written to `project/dist/bundle.js`. React and ReactDOM are loaded as CDN globals by `project/Pit Wall.html`, while the application code is bundled by esbuild.
-
-`npm install` does not use the Python virtual environment. It is fine to run it in the same terminal while the venv is active, because Node and npm are separate from Python. You only need to make sure you are in the `project/` directory when running the npm commands.
-
-### Tests
-
-Backend / pipeline tests:
+Backend and pipeline tests:
 
 ```bash
 python -m pytest tests
 ```
 
-Frontend hotkey tests:
+Frontend tests:
 
 ```bash
 cd project
 npm test
 ```
 
+Useful hotkeys:
+
+| Key | Action |
+|---|---|
+| `Space` | Play / pause |
+| `Left` / `Right` | Seek backward / forward |
+| `Up` / `Down` | Increase / decrease playback speed |
+| `1` `2` `3` `4` | Set `0.5x`, `1x`, `2x`, `4x` |
+| `D` | Return to default WebGL view |
+| `F` | Toggle chase view |
+| `M` | Toggle top-down view |
+| `L` | Toggle labels |
+| `C` | Toggle camera controls |
+| `H` | Toggle POV HUD |
+| `N` | Toggle mini-map |
+| `R` | Restart replay from the beginning |
+
 ## Architecture
 
 ```mermaid
 flowchart TB
-    subgraph PY["Python process · src.web.pit_wall_server"]
+    subgraph PY["Python process - src.web.pit_wall_server"]
         SM["SessionManager<br/>cache-first loader"]
         PB["Playback<br/>25 Hz tick"]
         WS["WS Hub<br/>/ws/telemetry"]
         HTTP["FastAPI REST<br/>/api/*"]
-        STATIC["Static mount<br/>/app → project/"]
+        STATIC["Static mount<br/>/app -> project/"]
         SM --> PB --> WS
         SM --> HTTP
         STATIC --> HTTP
@@ -141,11 +227,11 @@ flowchart TB
     end
 
     subgraph FF1["FastF1 cold path"]
-        F1API["Telemetry · Weather · Messages"]
+        F1API["Telemetry - Weather - Messages"]
     end
 
     subgraph BROWSER["Browser"]
-        APP["React root · App.jsx"]
+        APP["React root - App.jsx"]
         TRACK["Track3D / IsoTrack"]
         PICKER["RacePicker"]
         LIVE["window.LIVE.useLive()"]
@@ -160,36 +246,20 @@ flowchart TB
     WS <-->|snapshot + frame stream| LIVE
 ```
 
-### Cache-first session lifecycle
+### Cache-First Session Lifecycle
 
 `SessionManager.load(year, round, session_type)` takes one of two paths:
 
-1. **Warm cache**: validate `computed_data/web/v1/*.arrow` plus `.meta.json`, open the Arrow handle, and hydrate runtime state directly.
-2. **Cold build**: load the FastF1 session, build the deterministic dataset, write Arrow + metadata, then reopen from cache.
+1. Warm cache: validate `computed_data/web/v1/*.arrow` plus `.meta.json`, open the Arrow handle, and hydrate runtime state directly.
+2. Cold build: load the FastF1 session, build the deterministic dataset, write Arrow + metadata, then reopen from cache.
 
 That gives the UI a predictable loading flow:
 
-`Checking web cache` → `Building web cache` → `Hydrating replay state` → `Ready`
-
-## UI Overview
-
-The console is built around a three-rail layout:
-
-- **Left rail**: classification and session context
-- **Center**: circuit view, timeline, transport, and camera controls
-- **Right rail**: driver detail, gap panels, compare views, and strategy context
-
-Notable UI capabilities:
-
-- 10 panels managed through `project/src/PanelFrame.jsx`
-- pop-out panel windows and fullscreen panel mode
-- WebGL **CHASE** and **POV** cameras alongside orbit, top-down, and IsoTrack
-- persisted view state and panel preferences via `localStorage`
-- top-bar weather/session metadata and timeline overlays for SC/VSC/red periods
+`Checking web cache` -> `Building web cache` -> `Hydrating replay state` -> `Ready`
 
 ## API Summary
 
-### REST endpoints
+### REST Endpoints
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -200,7 +270,7 @@ Notable UI capabilities:
 | `GET` | `/api/session/status` | Loading state |
 | `GET` | `/api/session/summary` | Event, drivers, laps, rotation |
 | `GET` | `/api/session/geometry` | Public track geometry payload |
-| `GET` | `/api/session/race_control` | Race control messages |
+| `GET` | `/api/session/race_control` | Race-control messages |
 | `GET` | `/api/session/results` | Final-ish classification view |
 | `GET` | `/api/session/gap_to_leader` | Gap-history chart data |
 | `GET` | `/api/session/lap_telemetry/{code}/{lap}` | Lap trace data for compare panels |
@@ -215,32 +285,25 @@ Notable UI capabilities:
 |---|---|
 | `/ws/telemetry` | Snapshot on connect, then live replay frame updates |
 
-## Asset Credits
-
-Source code in this repository is MIT-licensed. Third-party 3D assets are licensed separately:
-
-- `F1 2022 Generic` by [TheoDevF1](https://sketchfab.com/TheoDevF12), used under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/). Source: https://sketchfab.com/3d-models/f1-2022-generic-9b2fc584679e468ca3a7cb98a75857d2
-- `2019 Mercedes-Benz AMG GTR Safety Car` by [OUTPISTON](https://sketchfab.com/outpiston), used under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). Source: https://sketchfab.com/3d-models/2019-mercedes-benz-amg-gtr-safety-car-5bfaf6b31d084dde80dae723b52998bc
-
 ## Project Layout
 
 ```text
 .
-├── assets/
-│   └── models/                 # Source GLB models tracked in git
-├── project/
-│   ├── Pit Wall.html           # Static shell served at /app/
-│   ├── build.mjs               # esbuild bundler + asset copy
-│   ├── src/                    # React app and Three.js view code
-│   └── tests/                  # Frontend tests
-├── src/
-│   ├── data/                   # Arrow cache and storage helpers
-│   ├── lib/                    # Shared utility code
-│   ├── web/                    # FastAPI app, playback, routes, WS hub
-│   └── f1_data.py              # FastF1 session loading and dataset building
-├── tests/                      # Backend and pipeline tests
-├── requirements.txt
-└── computed_data/              # Runtime-generated replay caches
+|- assets/
+|  `- models/                 # Source GLB models tracked in git
+|- project/
+|  |- Pit Wall.html           # Static shell served at /app/
+|  |- build.mjs               # esbuild bundler + asset copy
+|  |- src/                    # React app and Three.js view code
+|  `- tests/                  # Frontend tests
+|- src/
+|  |- data/                   # Arrow cache and storage helpers
+|  |- lib/                    # Shared utility code
+|  |- web/                    # FastAPI app, playback, routes, WS hub
+|  `- f1_data.py              # FastF1 session loading and dataset building
+|- tests/                     # Backend and pipeline tests
+|- computed_data/             # Runtime-generated replay caches
+`- README.md
 ```
 
 ## Notes
@@ -250,6 +313,13 @@ Source code in this repository is MIT-licensed. Third-party 3D assets are licens
 - Cached replay data under `computed_data/` and HTTP cache data under `cache/` are runtime artifacts, not source.
 - To force a web cache rebuild, remove the relevant Arrow files or set `DELTA_FORCE_WEB_CACHE_REBUILD=1` when starting the server.
 
+## Asset Credits
+
+Source code in this repository is MIT-licensed. Third-party 3D assets are licensed separately:
+
+- `F1 2022 Generic` by [TheoDevF1](https://sketchfab.com/TheoDevF12), used under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/). Source: https://sketchfab.com/3d-models/f1-2022-generic-9b2fc584679e468ca3a7cb98a75857d2
+- `2019 Mercedes-Benz AMG GTR Safety Car` by [OUTPISTON](https://sketchfab.com/outpiston), used under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). Source: https://sketchfab.com/3d-models/2019-mercedes-benz-amg-gtr-safety-car-5bfaf6b31d084dde80dae723b52998bc
+
 ## Attribution
 
-This standalone repository builds on the original FastF1 replay work from the upstream `f1-race-replay` lineage. The current version is focused specifically on the web console, cache pipeline, and 3D replay experience.
+This standalone repository builds on the original FastF1 replay work from the upstream `f1-race-replay` lineage. The current version is focused on the browser console, cache pipeline, and 3D replay experience.
