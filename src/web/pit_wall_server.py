@@ -67,7 +67,7 @@ def build_app(year, round_number, session_type: str, cache_dir: Path) -> FastAPI
             response.headers["Expires"] = "0"
         return response
 
-    # Serve the prototype at /app/Pit%20Wall.html
+    # Serve the React frontend at /app/Pit%20Wall.html
     project_dir = Path(__file__).resolve().parent.parent.parent / "project"
     if project_dir.is_dir():
         bundle_path = project_dir / "dist" / "bundle.js"

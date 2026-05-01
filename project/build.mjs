@@ -4,26 +4,27 @@ import { join, dirname } from "path";
 
 const isWatch = process.argv.includes("--watch");
 
-// Copy static assets (GLB models, etc.) into project/assets/.
+// Copy tracked source assets into project/assets/ for static serving.
 // The server mounts project/ at /app/, so assets/f1-car.glb is served at
-// /app/assets/f1-car.glb which matches the CAR_MODEL_PATH in Track3D.jsx.
+// /app/assets/f1-car.glb which matches the loader paths in track3d/cars.js.
 function copyAssets() {
   const projectDir = dirname(import.meta.url.replace("file://", ""));
   const assetsDir = join(projectDir, "assets");
+  const sourceAssetsDir = join(projectDir, "..", "assets", "models");
   if (!existsSync(assetsDir)) mkdirSync(assetsDir, { recursive: true });
-  const src = join(projectDir, "..", "car_model.glb");
+  const src = join(sourceAssetsDir, "f1-car.glb");
   if (existsSync(src)) {
     cpSync(src, join(assetsDir, "f1-car.glb"));
     console.log("Copied f1-car.glb → assets/");
   } else {
-    console.warn("Warning: f1-car.glb not found at project root — cars will use fallback primitives.");
+    console.warn("Warning: assets/models/f1-car.glb not found — cars will use fallback primitives.");
   }
-  const scSrc = join(projectDir, "..", "safety_car.glb");
+  const scSrc = join(sourceAssetsDir, "safety_car.glb");
   if (existsSync(scSrc)) {
     cpSync(scSrc, join(assetsDir, "safety_car.glb"));
     console.log("Copied safety_car.glb → assets/");
   } else {
-    console.warn("Warning: safety_car.glb not found at project root — safety car will use fallback primitives.");
+    console.warn("Warning: assets/models/safety_car.glb not found — safety car will use fallback primitives.");
   }
 }
 

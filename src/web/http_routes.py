@@ -1,5 +1,4 @@
 import os
-import time
 from fastapi import APIRouter, BackgroundTasks, Request
 from src.web.session_manager import loading_state
 from src.web.serialization import safe_jsonable
@@ -370,27 +369,6 @@ def playback_speed(payload: dict, request: Request):
     s = payload.get("speed", 1.0)
     pb.set_speed(float(s))
     return {"ok": True}
-
-
-# ---------------------------------------------------------------------------
-# Chat
-# ---------------------------------------------------------------------------
-
-_last_chat_ts: dict[str, float] = {}
-
-
-@router.post("/chat")
-def chat(payload: dict, request: Request):
-    client_ip = request.client.host if request.client else "unknown"
-    now = time.time()
-    if now - _last_chat_ts.get(client_ip, 0) < 2.0:
-        return {"reply": "Rate limited — wait 2 s between messages.", "citations": []}
-    _last_chat_ts[client_ip] = now
-
-    from src.web.chat_bridge import answer
-    question = payload.get("message", "")
-    context = payload.get("context", {})
-    return answer(question, context)
 
 
 # ---------------------------------------------------------------------------

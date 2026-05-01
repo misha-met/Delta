@@ -312,7 +312,7 @@ def _build_web_cache(
     return arrow_path
 
 def _pick_example_lap(session):
-    """Same chain as main.py:50-67 — prefer quali lap for DRS zones."""
+    """Prefer a qualifying lap for DRS zones, then fall back to the race lap."""
     example_lap = None
     try:
         quali_session = load_session(
@@ -336,16 +336,10 @@ def _pick_example_lap(session):
 
 
 def _extract_geometry(session):
-    """Try Arcade-based builder; fall back to pure-numpy."""
+    """Build track geometry headlessly for the web runtime."""
     example_lap = _pick_example_lap(session)
-
-    try:
-        from src.ui_components import build_track_from_example_lap
-        raw = build_track_from_example_lap(example_lap)
-    except ImportError:
-        from src.lib.track_geometry import build_track_pure
-        raw = build_track_pure(example_lap)
-
+    from src.lib.track_geometry import build_track_pure
+    raw = build_track_pure(example_lap)
     return _shape_geometry_payload(raw, session)
 
 

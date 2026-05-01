@@ -4,8 +4,8 @@ import numpy as np
 def build_track_pure(example_lap, track_width=200):
     """Pure-numpy track geometry builder (no Arcade dependency).
 
-    Extracted from src/ui_components.py:build_track_from_example_lap so the
-    web server can compute geometry headless.
+    Keeps the geometry generation fully headless so the web server can build
+    track data without any desktop UI dependencies.
     """
     drs_zones = _plot_drs_zones(example_lap)
     plot_x_ref = example_lap["X"]
