@@ -104,18 +104,55 @@ This repository is focused on the web stack:
 
 ## Quick Start
 
+Clone the repo, then run one script from the `scripts/` folder. It checks prerequisites, creates a virtual environment, installs all dependencies, builds the frontend, and starts the server.
+
+**macOS / Linux**
+
+```bash
+bash scripts/start.sh
+```
+
+**Windows — PowerShell**
+
+```powershell
+.\scripts\start.ps1
+```
+
+**Windows — Command Prompt**
+
+```bat
+scripts\start.bat
+```
+
+When the server is ready the URL is printed in the terminal:
+
+```
+http://localhost:8000/app/Pit%20Wall.html
+```
+
+Any CLI flags are passed straight through to the server:
+
+```bash
+bash scripts/start.sh --year 2025 --round 12 --session-type R
+```
+
+If you start without `--year` and `--round` the app opens into `RacePicker`.
+
+## Manual Setup
+
+If you prefer to run each step yourself:
+
 ```bash
 # 1. Create and activate a virtual environment
 python3 -m venv .venv
-source .venv/bin/activate
-
-# Windows PowerShell:
-# .venv\Scripts\Activate.ps1
+source .venv/bin/activate        # macOS / Linux
+# .venv\Scripts\Activate.ps1    # Windows PowerShell
+# .venv\Scripts\activate.bat    # Windows CMD
 
 # 2. Install Python dependencies
 pip install -r requirements.txt
 
-# 3. Build the frontend bundle
+# 3. Install and build the frontend
 cd project
 npm install
 npm run build
@@ -125,15 +162,7 @@ cd ..
 python -m src.web.pit_wall_server
 ```
 
-Open:
-
-```text
-http://localhost:8000/app/Pit%20Wall.html
-```
-
-If you start the server without `--year` and `--round`, the app opens into `RacePicker`.
-
-If you want to jump straight into a known session:
+Jump straight into a known race:
 
 ```bash
 python -m src.web.pit_wall_server --year 2025 --round 12 --session-type R
