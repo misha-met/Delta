@@ -60,9 +60,7 @@ This repository is focused on the web stack:
 - sector times panel for quick split comparison
 - useful for showing where one driver gains, brakes later, or gets traction down earlier
 
-> Screenshot slot: `docs/screenshots/05-telemetry-compare.png`  
-> Suggested capture: compare traces with a visible playhead and sector-times panel beside it.
-![Telemetry compare placeholder](docs/screenshots/05-telemetry-compare.svg)
+![Telemetry compare placeholder](docs/screenshots/traceslide-readme.png)
 
 ### Strategy, Gaps, and the Spaghetti View
 
@@ -93,9 +91,7 @@ This repository is focused on the web stack:
 - warm cache loads skip a full FastF1 rebuild and jump straight into replay hydration
 - loading states make the data pipeline visible instead of feeling like a blank wait screen
 
-> Screenshot slot: `docs/screenshots/08-race-picker.png`  
-> Suggested capture: the RacePicker grid or loading flow with cache-aware session selection.
-![RacePicker placeholder](docs/screenshots/08-race-picker.svg)
+![RacePicker placeholder](docs/screenshots/racepickerslide-readme.png)
 
 ## Panel Map
 
