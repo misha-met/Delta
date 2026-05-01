@@ -1,3 +1,14 @@
+// Stage thresholds mirror progress values set in src/web/session_manager.py.
+// Keep in sync if backend stages change.
+const LOAD_STAGES = [
+  { key: "cache",     label: "Checking local cache",     threshold: 5 },
+  { key: "download",  label: "Downloading from FastF1",  threshold: 15 },
+  { key: "telemetry", label: "Processing telemetry",     threshold: 30 },
+  { key: "geometry",  label: "Building track geometry",  threshold: 55 },
+  { key: "laps",      label: "Building lap data",        threshold: 65 },
+  { key: "hydrate",   label: "Hydrating replay",         threshold: 80 },
+];
+
 function LoadingGate({ children }) {
   const { loading } = window.LIVE.useLive();
   const [poll, setPoll] = React.useState(null);
@@ -51,6 +62,15 @@ function LoadingGate({ children }) {
   const dots = ".".repeat(dot);
   const isSlow = elapsed >= 15;
 
+  // The "active" stage is the latest one whose threshold has been reached but
+  // whose successor hasn't. Earlier stages render done, later render pending.
+  // Warm-cache loads jump from 5% → 80%, which collapses skipped stages into
+  // "done" — visually conveys "we didn't need that step".
+  let activeIdx = -1;
+  for (let i = LOAD_STAGES.length - 1; i >= 0; i--) {
+    if (progress >= LOAD_STAGES[i].threshold) { activeIdx = i; break; }
+  }
+
   return (
     <>
       {children}
@@ -60,17 +80,14 @@ function LoadingGate({ children }) {
         justifyContent: "center", flexDirection: "column", zIndex: 9999,
         fontFamily: "monospace", gap: 0,
       }}>
-        {/* Title */}
         <div style={{ fontSize: 11, letterSpacing: 4, opacity: 0.45, marginBottom: 18, textTransform: "uppercase" }}>
           Delta Pitwall
         </div>
 
-        {/* Stage label + animated dots */}
         <div style={{ fontSize: 13, letterSpacing: 2, marginBottom: 14, minWidth: 260, textAlign: "center" }}>
           {message}{dots}
         </div>
 
-        {/* Progress bar */}
         <div style={{ width: 300, height: 3, background: "#222", borderRadius: 2, overflow: "hidden" }}>
           <div style={{
             width: `${progress}%`, height: "100%",
@@ -80,14 +97,42 @@ function LoadingGate({ children }) {
           }} />
         </div>
 
-        {/* Progress % + elapsed */}
         <div style={{ marginTop: 10, fontSize: 11, opacity: 0.4, display: "flex", gap: 16 }}>
           <span>{progress}%</span>
           <span>{elapsed}s</span>
         </div>
 
-        {/* Slow-load hint — only shown after 15 s (cold cache / first run) */}
-        {isSlow && (
+        <div style={{
+          marginTop: 22, width: 300, display: "flex",
+          flexDirection: "column", gap: 6,
+        }}>
+          {LOAD_STAGES.map((stage, i) => {
+            const state = i < activeIdx ? "done"
+                        : i === activeIdx ? "active"
+                        : "pending";
+            const color = state === "done"   ? "rgba(255,255,255,0.55)"
+                        : state === "active" ? "#FF6A4A"
+                        : "rgba(255,255,255,0.25)";
+            const marker = state === "done"   ? "✓"
+                        : state === "active" ? "▸"
+                        : "○";
+            return (
+              <div key={stage.key} style={{
+                display: "flex", alignItems: "center", gap: 10,
+                fontSize: 11, letterSpacing: 1, color,
+                fontWeight: state === "active" ? 700 : 400,
+              }}>
+                <span style={{
+                  width: 14, textAlign: "center",
+                  fontFamily: "monospace",
+                }}>{marker}</span>
+                <span>{stage.label}{state === "active" ? dots : ""}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {isSlow && activeIdx <= 4 && (
           <div style={{
             marginTop: 18, fontSize: 10, opacity: 0.35, maxWidth: 300,
             textAlign: "center", lineHeight: 1.6,
