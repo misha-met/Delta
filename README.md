@@ -35,6 +35,8 @@ The desktop runtime from the original fork lineage has been removed from this re
 
 ## Quick Start
 
+### macOS / Linux
+
 ```bash
 # 1. Create and activate a virtual environment
 python3 -m venv .venv
@@ -53,7 +55,7 @@ cd ..
 python -m src.web.pit_wall_server
 ```
 
-On Windows:
+### Windows
 
 ```bash
 python -m venv .venv
@@ -212,6 +214,13 @@ Notable UI capabilities:
 | Path | Purpose |
 |---|---|
 | `/ws/telemetry` | Snapshot on connect, then live replay frame updates |
+
+## Asset Credits
+
+Source code in this repository is MIT-licensed. Third-party 3D assets are licensed separately:
+
+- `F1 2022 Generic` by [TheoDevF1](https://sketchfab.com/TheoDevF12), used under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/). Source: https://sketchfab.com/3d-models/f1-2022-generic-9b2fc584679e468ca3a7cb98a75857d2
+- `2019 Mercedes-Benz AMG GTR Safety Car` by [OUTPISTON](https://sketchfab.com/outpiston), used under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). Source: https://sketchfab.com/3d-models/2019-mercedes-benz-amg-gtr-safety-car-5bfaf6b31d084dde80dae723b52998bc
 
 ## Project Layout
 
