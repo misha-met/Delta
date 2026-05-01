@@ -1,6 +1,6 @@
 <div align="center">
 
-![Delta Pitwall Main](docs/screenshots/main_readme.png)
+![Delta Pitwall Main](docs/screenshots/slide1-readme.png)
 
 </div>
 
@@ -23,9 +23,6 @@ This repository is focused on the web stack:
 - layout and view preferences persist in `localStorage`
 - top bar, timeline, and panel chrome give the app more of a replay console feel than a simple dashboard
 
-> Screenshot slot: `docs/screenshots/01-pitwall-overview.png`  
-> Suggested capture: the full desktop layout with classification, circuit view, strategy, and right-rail panels visible.
-![Delta Pitwall overview placeholder](docs/screenshots/01-pitwall-overview.svg)
 
 ### 3D Circuit Replay
 
@@ -47,7 +44,7 @@ This repository is focused on the web stack:
 
 > Screenshot slot: `docs/screenshots/03-cockpit-pov.png`  
 > Suggested capture: a clean in-cockpit frame where the wheel HUD is easy to read.
-![Cockpit POV placeholder](docs/screenshots/03-cockpit-pov.svg)
+![Cockpit POV placeholder](docs/screenshots/cockpitslide-readme.png)
 
 ### Classification and Driver Focus
 
