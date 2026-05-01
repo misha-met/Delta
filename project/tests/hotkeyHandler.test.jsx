@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // hotkeyHandler.js assigns to window.APEX_HOTKEY — import side-effects only
-import "./hotkeyHandler.js";
-const { buildHotkeyHandler, SPEED_STEPS } = window.APEX_HOTKEY;
+import "../src/hotkeyHandler.js";
+const { buildHotkeyHandler } = window.APEX_HOTKEY;
 
 // ── Helpers ──
 

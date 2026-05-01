@@ -2,7 +2,7 @@
 Temporary unit test: verify real stint/pit_stop data flows correctly
 from _precompute_lap_data → build_snapshot → JS API shape.
 
-Run:  python test_strategy_strip.py
+Run:  python -m pytest tests
 """
 import sys, json
 from unittest.mock import MagicMock, patch
@@ -108,7 +108,7 @@ def test_precompute_no_pit():
 def test_build_snapshot_includes_stints():
     """build_snapshot must include stints and pit_stops keyed by driver code."""
     # Stub out heavy imports so we can test build_snapshot in isolation
-    import types, sys
+    import types
 
     # Create a fake fastapi module with the symbols playback.py needs
     fake_fastapi = types.ModuleType("fastapi")

@@ -4,9 +4,10 @@ Tests for track_statuses pipeline:
   2. LiveProvider stores track_statuses from snapshot into state
   3. track_statuses are converted to safetyCarEvents [{start, end}] for Timeline
 
-Run:  python test_track_statuses.py
+Run:  python -m pytest tests
 """
 import sys, json, types
+from pathlib import Path
 from unittest.mock import MagicMock
 
 
@@ -236,7 +237,8 @@ def test_track_statuses_no_sc_events():
 # ── Run all ────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    sys.path.insert(0, "/Users/austen/Desktop/f1-race-replay-main")
+    repo_root = Path(__file__).resolve().parents[1]
+    sys.path.insert(0, str(repo_root))
 
     tests = [
         test_build_snapshot_includes_track_statuses,
