@@ -31,9 +31,7 @@ This repository is focused on the web stack:
 - floating labels, selection highlights, safety-car overlays, and an optional mini-map
 - a central replay view designed to feel live even when scrubbing through cached race data
 
-> Screenshot slot: `docs/screenshots/02-3d-circuit-view.png`  
-> Suggested capture: a wide circuit shot showing the track scene, labels, and right-side overlays.
-![3D circuit replay placeholder](docs/screenshots/02-3d-circuit-view.svg)
+![3D circuit replay placeholder](docs/screenshots/webglslide-readme.png)
 
 ### Cockpit POV
 
@@ -42,8 +40,6 @@ This repository is focused on the web stack:
 - built for the "inside the cockpit" moments that sell the replay immediately on GitHub
 - includes a tuning panel for HUD placement and emissive settings when you need to refine the look
 
-> Screenshot slot: `docs/screenshots/03-cockpit-pov.png`  
-> Suggested capture: a clean in-cockpit frame where the wheel HUD is easy to read.
 ![Cockpit POV placeholder](docs/screenshots/cockpitslide-readme.png)
 
 ### Classification and Driver Focus
