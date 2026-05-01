@@ -183,9 +183,11 @@ function Timeline({ t, setT, playing, setPlaying, speed, setSpeed, lap, totalLap
       pendingSeekRef.current = scrubRef.current;
       flushSeek();
     }
-    setScrubT(null);
+    // Clear scrubT only after the final seek fires so displayT never snaps
+    // back to the pre-seek `t` for a frame.
     scrubRef.current = null;
     setDrag(false);
+    setScrubT(null);
   };
 
   React.useEffect(() => {

@@ -225,15 +225,27 @@ function CompareTraces({ pinned, secondary, lap, channel = "speed", setChannel, 
   // Kick off server fetches for any (code, lap) that's not cached yet.
   // On resolve, bump a tick to force recomputation of the memoized traces.
   const [cacheTick, setCacheTick] = React.useState(0);
+  const [fetching, setFetching] = React.useState(false);
   React.useEffect(() => {
     const fetchFn = window.DELTA?.fetchLapTrace;
     const getCached = window.DELTA?.getCachedLapTrace;
     if (!fetchFn || !getCached) return;
     let cancelled = false;
-    for (const c of codes) {
-      if (!getCached(c, lap)) {
-        fetchFn(c, lap).then((d) => { if (!cancelled && d) setCacheTick((x) => x + 1); });
-      }
+    const pending = codes.filter((c) => !getCached(c, lap));
+    if (pending.length === 0) { setFetching(false); return; }
+    setFetching(true);
+    let remaining = pending.length;
+    for (const c of pending) {
+      fetchFn(c, lap).then((d) => {
+        if (cancelled) return;
+        if (d) setCacheTick((x) => x + 1);
+        remaining--;
+        if (remaining === 0) setFetching(false);
+      }).catch(() => {
+        if (cancelled) return;
+        remaining--;
+        if (remaining === 0) setFetching(false);
+      });
     }
     return () => { cancelled = true; };
   }, [codes, lap]);
@@ -323,7 +335,7 @@ function CompareTraces({ pinned, secondary, lap, channel = "speed", setChannel, 
             return <React.Fragment key={c}>{` · `}<span style={{ color: teamColor }}>{drv?.code || c}</span></React.Fragment>;
           })}</>} meta={`LAP ${lap}`} />
       <div style={{ position: "relative" }}>
-        {!hasData && (
+        {fetching && !hasData && (
           <div style={{
             position: "absolute", top: 8, right: 10,
             fontFamily: T.mono,
@@ -334,6 +346,16 @@ function CompareTraces({ pinned, secondary, lap, channel = "speed", setChannel, 
             border: "1px solid rgba(255,255,255,0.08)",
             zIndex: 2,
           }}>WAIT</div>
+        )}
+        {!fetching && !hasData && codes.length > 0 && (
+          <div style={{
+            position: "absolute", top: 8, right: 10,
+            fontFamily: T.mono,
+            fontSize: T.fs.xs,
+            letterSpacing: T.ls.caps,
+            color: T.textFaint,
+            zIndex: 2,
+          }}>NO TELEMETRY FOR LAP {lap}</div>
         )}
         <div style={{
           position: "absolute", top: 6, left: 120,

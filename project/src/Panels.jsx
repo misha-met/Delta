@@ -153,12 +153,16 @@ function GapHistory({ pinned, secondary, onPick, onShiftPick, lap }) {
   const containerRef = React.useRef(null);
   const [size, setSize] = React.useState({ w: 360, h: 220 });
 
-  // Retry on failure with backoff — session may not be loaded yet when this
-  // panel first mounts, and the endpoint 404s until it is.
-  React.useEffect(() => {
+  const [gaveUp, setGaveUp] = React.useState(false);
+  const retryRef = React.useRef(null);
+
+  const startFetch = React.useCallback(() => {
+    setGaveUp(false);
+    setLoadErr(null);
     let cancelled = false;
     let attempt = 0;
     let timer = null;
+    const MAX_ATTEMPTS = 5;
     const tryFetch = () => {
       if (cancelled) return;
       window.DELTA_CLIENT.get("/api/session/gap_to_leader")
@@ -169,15 +173,25 @@ function GapHistory({ pinned, secondary, onPick, onShiftPick, lap }) {
         })
         .catch((err) => {
           if (cancelled) return;
-          setLoadErr(String(err?.message || err));
           attempt++;
+          if (attempt >= MAX_ATTEMPTS) {
+            setLoadErr(String(err?.message || err));
+            setGaveUp(true);
+            return;
+          }
+          setLoadErr(String(err?.message || err));
           const delay = Math.min(8000, 1000 * (2 ** Math.min(attempt, 3)));
           timer = setTimeout(tryFetch, delay);
         });
     };
     tryFetch();
+    retryRef.current = () => { cancelled = true; if (timer) clearTimeout(timer); };
     return () => { cancelled = true; if (timer) clearTimeout(timer); };
   }, []);
+
+  // Retry on failure with backoff — session may not be loaded yet when this
+  // panel first mounts, and the endpoint 404s until it is.
+  React.useEffect(() => startFetch(), []);
 
   // Track container size so the SVG fills the panel.
   React.useEffect(() => {
@@ -316,8 +330,24 @@ function GapHistory({ pinned, secondary, onPick, onShiftPick, lap }) {
       <PanelHeader title="GAP HISTORY" meta={totalLaps ? `${lines.length} DRIVERS · ${totalLaps} L` : ""}/>
       <div ref={containerRef} style={{ flex: 1, position: "relative", padding: 6 }}>
         {!data && (
-          <div style={{ padding: 14, fontFamily: T.mono, fontSize: T.fs.xs, color: T.textDim, letterSpacing: T.ls.caps }}>
-            {loadErr ? `RETRYING… (${loadErr})` : "LOADING…"}
+          <div style={{ padding: 14, fontFamily: T.mono, fontSize: T.fs.xs, letterSpacing: T.ls.caps }}>
+            {gaveUp ? (
+              <span style={{ color: T.textDim }}>
+                GAP HISTORY UNAVAILABLE
+                <button
+                  onClick={startFetch}
+                  style={{
+                    marginLeft: 10, background: "none", border: "1px solid rgba(255,255,255,0.2)",
+                    color: T.textDim, fontFamily: T.mono, fontSize: T.fs.xs,
+                    letterSpacing: T.ls.caps, cursor: "pointer", padding: "1px 6px",
+                  }}
+                >RETRY</button>
+              </span>
+            ) : (
+              <span style={{ color: T.textDim }}>
+                {loadErr ? `RETRYING… (${loadErr})` : "LOADING…"}
+              </span>
+            )}
           </div>
         )}
         {data && totalLaps > 0 && (
