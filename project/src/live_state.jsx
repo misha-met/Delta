@@ -13,8 +13,21 @@ function LiveProvider({ children }) {
   React.useEffect(() => {
     let lastFrameT = null;
     let wasPaused = true;
-    let lastReactUpdateT = 0;
-    const REACT_FRAME_THROTTLE_MS = 50;
+    // Drive React panel updates from rAF so they tick on the same frame as
+    // the 3D scene. Without this, panels lagged behind the 3D view by up to
+    // 50ms — driver speeds, gap bars, lap counter visibly desynced.
+    let pendingFrame = null;
+    let rafId = null;
+    const scheduleFrame = () => {
+      if (rafId != null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        if (pendingFrame) {
+          setFrame(pendingFrame);
+          pendingFrame = null;
+        }
+      });
+    };
 
     const h = window.DELTA_CLIENT.openSocket((msg) => {
       if (msg.type === "loading") {
@@ -77,11 +90,13 @@ function LiveProvider({ children }) {
         window.__LIVE_BUFFER?.push?.(msg);
         if (window.DELTA?._accumulateFrame) window.DELTA._accumulateFrame(msg);
 
-        // Throttle React updates to ~20Hz except on pause/seek transitions
-        const now = performance.now();
-        if (shouldResetBuffer || now - lastReactUpdateT >= REACT_FRAME_THROTTLE_MS) {
+        pendingFrame = msg;
+        if (shouldResetBuffer) {
+          if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
           setFrame(msg);
-          lastReactUpdateT = now;
+          pendingFrame = null;
+        } else {
+          scheduleFrame();
         }
 
         setPb((p) => ({ ...p, speed: msg.playback_speed, is_paused: msg.is_paused }));
@@ -89,7 +104,10 @@ function LiveProvider({ children }) {
         wasPaused = isPaused;
       }
     });
-    return () => h.close();
+    return () => {
+      if (rafId != null) cancelAnimationFrame(rafId);
+      h.close();
+    };
   }, []);
 
   // Derive visible RC feed: everything up to the current playback time,
