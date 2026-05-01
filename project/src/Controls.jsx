@@ -124,8 +124,35 @@ function Timeline({ t, setT, playing, setPlaying, speed, setSpeed, lap, totalLap
   const [drag, setDrag] = React.useState(false);
   const [scrubT, setScrubT] = React.useState(null);
   const scrubRef = React.useRef(null);
+  const lastSeekRef = React.useRef(0);
+  const pendingSeekRef = React.useRef(null);
+  const seekTimerRef = React.useRef(null);
   const setTRef = React.useRef(setT);
   React.useEffect(() => { setTRef.current = setT; }, [setT]);
+
+  const SCRUB_THROTTLE_MS = 60;
+
+  const flushSeek = () => {
+    if (pendingSeekRef.current === null) return;
+    const v = pendingSeekRef.current;
+    pendingSeekRef.current = null;
+    lastSeekRef.current = performance.now();
+    setTRef.current(v);
+  };
+
+  const requestSeek = (val) => {
+    pendingSeekRef.current = val;
+    const now = performance.now();
+    const wait = SCRUB_THROTTLE_MS - (now - lastSeekRef.current);
+    if (wait <= 0) {
+      flushSeek();
+    } else if (seekTimerRef.current == null) {
+      seekTimerRef.current = setTimeout(() => {
+        seekTimerRef.current = null;
+        flushSeek();
+      }, wait);
+    }
+  };
 
   const from = (clientX) => {
     const r = trackRef.current.getBoundingClientRect();
@@ -137,16 +164,25 @@ function Timeline({ t, setT, playing, setPlaying, speed, setSpeed, lap, totalLap
     setDrag(true);
     setScrubT(val);
     scrubRef.current = val;
+    requestSeek(val);
   };
 
   const move = (clientX) => {
     const val = from(clientX);
     setScrubT(val);
     scrubRef.current = val;
+    requestSeek(val);
   };
 
   const end = () => {
-    if (scrubRef.current !== null) setTRef.current(scrubRef.current);
+    if (seekTimerRef.current != null) {
+      clearTimeout(seekTimerRef.current);
+      seekTimerRef.current = null;
+    }
+    if (scrubRef.current !== null) {
+      pendingSeekRef.current = scrubRef.current;
+      flushSeek();
+    }
     setScrubT(null);
     scrubRef.current = null;
     setDrag(false);
