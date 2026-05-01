@@ -69,9 +69,7 @@ This repository is focused on the web stack:
 - gap-history spaghetti chart for the full race story over time
 - race-control feed layered into the same console for flags, safety car, DRS, and other key events
 
-> Screenshot slot: `docs/screenshots/06-strategy-gap-history.png`  
-> Suggested capture: the strategy strip, gap-to-leader panel, and spaghetti chart together.
-![Strategy, gaps, and gap history placeholder](docs/screenshots/06-strategy-gap-history.svg)
+![Strategy, gaps, and gap history placeholder](docs/screenshots/gapsslide-readme.png)
 
 ### Replay Timeline and Session Control
 
@@ -79,10 +77,6 @@ This repository is focused on the web stack:
 - top bar with flag state, lap counter, race clock, air temperature, track temperature, and humidity
 - timeline overlays for laps, sectors, and safety-car periods
 - hotkeys for fast replay control and camera switching
-
-> Screenshot slot: `docs/screenshots/07-timeline-and-controls.png`  
-> Suggested capture: the bottom timeline with safety-car bands and the top session bar in the same frame.
-![Timeline and controls placeholder](docs/screenshots/07-timeline-and-controls.svg)
 
 ### RacePicker and Warm Starts
 
