@@ -63,6 +63,8 @@ class SessionManager:
             message="Checking web cache",
             year=year, round=round_number,
         )
+        print(f"[pit_wall] loading {year} round {round_number} ({session_type})")
+        print(f"[pit_wall]   checking web cache...")
 
         try:
             cache_valid = False
@@ -87,7 +89,8 @@ class SessionManager:
                     cache_reason = f"meta_read_error:{exc}"
 
             if not cache_valid:
-                _LOAD_STATE.update(progress=45, message="Building web cache")
+                print(f"[pit_wall]   cache miss ({cache_reason}) — building from FastF1 (this can take a minute)...")
+                _LOAD_STATE.update(progress=15, message="Downloading session data")
                 perf_metrics.log(
                     "web_startup mode='cold_build' "
                     f"path='{cache_path}' reason='{cache_reason}' force_rebuild={int(force_rebuild)}"
@@ -99,8 +102,13 @@ class SessionManager:
                     session_type=session_type,
                     cache_dir=self._cache_dir,
                 )
-                perf_metrics.log(f"web_cache_build_s={time.perf_counter() - build_started:.4f}")
+                elapsed = time.perf_counter() - build_started
+                perf_metrics.log(f"web_cache_build_s={elapsed:.4f}")
+                print(f"[pit_wall]   cache built in {elapsed:.1f}s")
+            else:
+                print(f"[pit_wall]   warm cache hit")
 
+            print(f"[pit_wall]   hydrating replay state...")
             _LOAD_STATE.update(progress=80, message="Hydrating replay state")
             handle = RaceHandle(cache_path)
             self._loaded = _hydrate_loaded_from_cache(
@@ -115,11 +123,14 @@ class SessionManager:
                     f"rss_after_hydrate_mb={rss_bytes / (1024 * 1024):.2f}"
                 )
 
-            perf_metrics.log(f"session_manager_load_total_s={time.perf_counter() - load_started:.4f}")
+            total = time.perf_counter() - load_started
+            perf_metrics.log(f"session_manager_load_total_s={total:.4f}")
             _LOAD_STATE.update(status="ready", progress=100, message="Ready")
+            print(f"[pit_wall]   ready in {total:.1f}s")
             return self._loaded
         except Exception as e:
             _LOAD_STATE.update(status="error", message=str(e))
+            print(f"[pit_wall]   ERROR: {e}")
             raise
 
     def current(self) -> dict | None:
@@ -263,18 +274,27 @@ def _build_web_cache(
     cache_dir.mkdir(parents=True, exist_ok=True)
     fastf1.Cache.enable_cache(str(cache_dir))
 
+    print(f"[pit_wall]     fetching session from FastF1...")
     session_started = time.perf_counter()
     session = load_session(year, round_number, session_type)
     perf_metrics.log(f"session_load_s={time.perf_counter() - session_started:.4f}")
+    print(f"[pit_wall]     session fetched in {time.perf_counter() - session_started:.1f}s")
 
+    print(f"[pit_wall]     processing telemetry...")
+    _LOAD_STATE.update(progress=30, message="Processing telemetry")
     telemetry_started = time.perf_counter()
     write_arrays, meta = build_race_cache_dataset(
         session,
         schema_version=WEB_CACHE_SCHEMA_VERSION,
     )
     perf_metrics.log(f"race_cache_build_s={time.perf_counter() - telemetry_started:.4f}")
+    print(f"[pit_wall]     telemetry done in {time.perf_counter() - telemetry_started:.1f}s")
 
+    print(f"[pit_wall]     building track geometry...")
+    _LOAD_STATE.update(progress=55, message="Building track geometry")
     geometry = _extract_geometry(session)
+    print(f"[pit_wall]     building driver + lap data...")
+    _LOAD_STATE.update(progress=65, message="Building lap data")
     driver_meta = _extract_driver_meta(session)
     driver_results = _extract_driver_results(session)
     lap_data = _precompute_lap_data(session)

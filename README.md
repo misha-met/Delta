@@ -104,7 +104,7 @@ This repository is focused on the web stack:
 
 ## Quick Start
 
-Clone the repo, then run one script from the `scripts/` folder. It checks prerequisites, creates a virtual environment, installs all dependencies, builds the frontend, and starts the server.
+> **First time only.** Run one script — it handles everything: checks prerequisites, creates a virtual environment, installs all Python and Node dependencies, builds the frontend bundle, and starts the server. On every run after the first it skips steps that are already done (no venv recreation, no npm install if `node_modules` exists, no rebuild if sources haven't changed).
 
 **macOS / Linux**
 
@@ -124,11 +124,7 @@ bash scripts/start.sh
 scripts\start.bat
 ```
 
-When the server is ready the URL is printed in the terminal:
-
-```
-http://localhost:8000/app/Pit%20Wall.html
-```
+When the server is ready the URL is printed in the terminal — open it in your browser.
 
 Any CLI flags are passed straight through to the server:
 
@@ -138,9 +134,34 @@ bash scripts/start.sh --year 2025 --round 12 --session-type R
 
 If you start without `--year` and `--round` the app opens into `RacePicker`.
 
+## Subsequent Runs
+
+Once the venv and bundle exist you don't need the script. Just activate and run:
+
+**macOS / Linux**
+
+```bash
+source .venv/bin/activate
+python -m src.web.pit_wall_server
+```
+
+**Windows — PowerShell**
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m src.web.pit_wall_server
+```
+
+**Windows — Command Prompt**
+
+```bat
+.venv\Scripts\activate.bat
+python -m src.web.pit_wall_server
+```
+
 ## Manual Setup
 
-If you prefer to run each step yourself:
+If you prefer to run the first-time setup step by step:
 
 ```bash
 # 1. Create and activate a virtual environment

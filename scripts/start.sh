@@ -20,6 +20,10 @@ echo -e "${BOLD}╔════════════════════�
 echo -e "${BOLD}║       Delta Pitwall  — startup       ║${RESET}"
 echo -e "${BOLD}╚══════════════════════════════════════╝${RESET}"
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$ROOT"
+
 # ── 1. Prerequisites ──────────────────────────────────────────────────────────
 step "Checking prerequisites"
 
@@ -35,10 +39,6 @@ ok "npm $(npm --version)"
 
 # ── 2. Python virtual environment ────────────────────────────────────────────
 step "Setting up Python virtual environment"
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-cd "$ROOT"
 
 if [ ! -d ".venv" ]; then
     python3 -m venv .venv
@@ -56,29 +56,44 @@ pip install --quiet --upgrade pip
 pip install --quiet -r requirements.txt
 ok "Python packages installed"
 
-# ── 4. Frontend — npm install ────────────────────────────────────────────────
-step "Installing frontend dependencies (npm install)"
-cd "$ROOT/project"
-npm install --silent
-ok "npm packages installed"
+# ── 4. Frontend — npm install (skipped if node_modules already present) ──────
+if [ ! -d "$ROOT/project/node_modules" ]; then
+    step "Installing frontend dependencies (npm install)"
+    cd "$ROOT/project"
+    npm install --silent
+    ok "npm packages installed"
+    cd "$ROOT"
+else
+    step "Frontend dependencies"
+    ok "node_modules already present — skipping npm install"
+fi
 
-# ── 5. Frontend — build ───────────────────────────────────────────────────────
-step "Building frontend bundle"
-npm run build
-ok "Frontend bundle built"
-cd "$ROOT"
+# ── 5. Frontend — build (skipped if bundle is up to date) ────────────────────
+BUNDLE="$ROOT/project/dist/bundle.js"
+SOURCES_NEWER=false
+if [ ! -f "$BUNDLE" ]; then
+    SOURCES_NEWER=true
+else
+    # rebuild if any source file is newer than the bundle
+    if find "$ROOT/project/src" "$ROOT/project/build.mjs" -newer "$BUNDLE" 2>/dev/null | grep -q .; then
+        SOURCES_NEWER=true
+    fi
+fi
+
+if $SOURCES_NEWER; then
+    step "Building frontend bundle"
+    cd "$ROOT/project"
+    npm run build
+    ok "Frontend bundle built"
+    cd "$ROOT"
+else
+    step "Frontend bundle"
+    ok "Bundle is up to date — skipping build"
+fi
 
 # ── 6. Launch ─────────────────────────────────────────────────────────────────
-PORT=8000
-step "Starting Delta Pitwall server"
-echo ""
-echo -e "${BOLD}  ┌─────────────────────────────────────────────────────┐${RESET}"
-echo -e "${BOLD}  │   Open in your browser:                             │${RESET}"
-echo -e "${BOLD}  │                                                     │${RESET}"
-echo -e "${BOLD}  │   ${GREEN}http://localhost:${PORT}/app/Pit%20Wall.html${BOLD}        │${RESET}"
-echo -e "${BOLD}  │                                                     │${RESET}"
-echo -e "${BOLD}  │   Press Ctrl+C to stop.                             │${RESET}"
-echo -e "${BOLD}  └─────────────────────────────────────────────────────┘${RESET}"
+step "Starting server"
+echo -e "  ${YELLOW}Next time you only need:  source .venv/bin/activate && python -m src.web.pit_wall_server${RESET}"
 echo ""
 
 python -m src.web.pit_wall_server "$@"

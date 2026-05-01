@@ -77,8 +77,8 @@ def build_app(year, round_number, session_type: str, cache_dir: Path) -> FastAPI
                 bundle_sig = hashlib.md5(bundle_path.read_bytes()).hexdigest()[:12]
             except Exception:
                 bundle_sig = "unreadable"
-        print(f"[pit_wall] static /app -> {project_dir} (bundle md5: {bundle_sig})")
         app.mount("/app", StaticFiles(directory=str(project_dir), html=True), name="app")
+        print(f"[pit_wall] bundle {bundle_sig}  static -> {project_dir}")
 
     # Snapshot provider for WS hub — sends full state on connect
     def _snapshot():
@@ -105,6 +105,17 @@ def main():
     p.add_argument("--cache-dir", type=Path, default=Path("cache/fastf1"))
     args = p.parse_args()
     app = build_app(args.year, args.round_number, args.session_type, args.cache_dir)
+
+    url = f"http://{args.host}:{args.port}/app/Pit%20Wall.html"
+    print()
+    print("  ╔══════════════════════════════════════════════════════╗")
+    print("  ║           Delta Pitwall — server starting            ║")
+    print("  ╠══════════════════════════════════════════════════════╣")
+    print(f"  ║  Open: {url:<45} ║")
+    print("  ║  Stop: Ctrl+C                                        ║")
+    print("  ╚══════════════════════════════════════════════════════╝")
+    print()
+
     uvicorn.run(
         app,
         host=args.host,

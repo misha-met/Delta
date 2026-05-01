@@ -12,6 +12,10 @@ Write-Host "========================================" -ForegroundColor White
 Write-Host "      Delta Pitwall  -  startup         " -ForegroundColor White
 Write-Host "========================================" -ForegroundColor White
 
+$scriptsDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$root = Split-Path -Parent $scriptsDir
+Set-Location $root
+
 # ── 1. Prerequisites ──────────────────────────────────────────────────────────
 Step "Checking prerequisites"
 
@@ -31,10 +35,6 @@ Ok "npm $( & npm --version )"
 # ── 2. Python virtual environment ─────────────────────────────────────────────
 Step "Setting up Python virtual environment"
 
-$scriptsDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$root = Split-Path -Parent $scriptsDir
-Set-Location $root
-
 if (-not (Test-Path ".venv")) {
     & python -m venv .venv
     Ok "Created .venv"
@@ -51,29 +51,45 @@ Step "Installing Python dependencies"
 & pip install --quiet -r requirements.txt
 Ok "Python packages installed"
 
-# ── 4. Frontend — npm install ──────────────────────────────────────────────────
-Step "Installing frontend dependencies (npm install)"
-Set-Location "$root\project"
-& npm install --silent
-Ok "npm packages installed"
+# ── 4. Frontend — npm install (skipped if node_modules already present) ───────
+Step "Frontend dependencies"
+if (-not (Test-Path "$root\project\node_modules")) {
+    Set-Location "$root\project"
+    & npm install --silent
+    Ok "npm packages installed"
+    Set-Location $root
+} else {
+    Ok "node_modules already present - skipping npm install"
+}
 
-# ── 5. Frontend — build ────────────────────────────────────────────────────────
-Step "Building frontend bundle"
-& npm run build
-Ok "Frontend bundle built"
-Set-Location $root
+# ── 5. Frontend — build (skipped if bundle exists and sources are older) ──────
+Step "Frontend bundle"
+$bundle = "$root\project\dist\bundle.js"
+$needsBuild = $true
+if (Test-Path $bundle) {
+    $bundleTime = (Get-Item $bundle).LastWriteTime
+    $srcNewer = Get-ChildItem "$root\project\src" -Recurse |
+        Where-Object { $_.LastWriteTime -gt $bundleTime } |
+        Select-Object -First 1
+    $buildMjsNewer = (Test-Path "$root\project\build.mjs") -and
+        ((Get-Item "$root\project\build.mjs").LastWriteTime -gt $bundleTime)
+    $needsBuild = ($null -ne $srcNewer) -or $buildMjsNewer
+}
+
+if ($needsBuild) {
+    Set-Location "$root\project"
+    & npm run build
+    Ok "Frontend bundle built"
+    Set-Location $root
+} else {
+    Ok "Bundle is up to date - skipping build"
+}
 
 # ── 6. Launch ──────────────────────────────────────────────────────────────────
-$port = 8000
-Step "Starting Delta Pitwall server"
-Write-Host ""
-Write-Host "  +-----------------------------------------------------+" -ForegroundColor White
-Write-Host "  |  Open in your browser:                              |" -ForegroundColor White
-Write-Host "  |                                                     |" -ForegroundColor White
-Write-Host "  |  http://localhost:$port/app/Pit%20Wall.html        |" -ForegroundColor Green
-Write-Host "  |                                                     |" -ForegroundColor White
-Write-Host "  |  Press Ctrl+C to stop.                              |" -ForegroundColor White
-Write-Host "  +-----------------------------------------------------+" -ForegroundColor White
+Step "Starting server"
+Write-Host "   Next time you only need:" -ForegroundColor Yellow
+Write-Host "     .\.venv\Scripts\Activate.ps1" -ForegroundColor Yellow
+Write-Host "     python -m src.web.pit_wall_server" -ForegroundColor Yellow
 Write-Host ""
 
 & python -m src.web.pit_wall_server @args

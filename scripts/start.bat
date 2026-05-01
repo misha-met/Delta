@@ -8,6 +8,9 @@ echo       Delta Pitwall  -  startup
 echo ========================================
 echo.
 
+:: scripts\ lives one level inside the repo root — go up one directory
+cd /d "%~dp0.."
+
 :: ── 1. Prerequisites ──────────────────────────────────────────────────────────
 echo [1/5] Checking prerequisites...
 
@@ -36,9 +39,6 @@ for /f "tokens=*" %%v in ('npm --version 2^>^&1') do echo   OK  npm %%v
 echo.
 echo [2/5] Setting up Python virtual environment...
 
-:: scripts\ lives one level inside the repo root — go up one directory
-cd /d "%~dp0.."
-
 if not exist ".venv" (
     python -m venv .venv
     if errorlevel 1 ( echo   ERROR: Failed to create .venv & pause & exit /b 1 )
@@ -59,33 +59,41 @@ pip install --quiet -r requirements.txt
 if errorlevel 1 ( echo   ERROR: pip install failed & pause & exit /b 1 )
 echo   OK  Python packages installed
 
-:: ── 4 + 5. Frontend ───────────────────────────────────────────────────────────
+:: ── 4. Frontend — npm install (skipped if node_modules already present) ───────
 echo.
-echo [4/5] Installing frontend dependencies (npm install)...
+echo [4/5] Frontend dependencies...
 
-cd project
-npm install --silent
-if errorlevel 1 ( echo   ERROR: npm install failed & pause & exit /b 1 )
-echo   OK  npm packages installed
+if not exist "project\node_modules" (
+    cd project
+    npm install --silent
+    if errorlevel 1 ( echo   ERROR: npm install failed & pause & exit /b 1 )
+    echo   OK  npm packages installed
+    cd ..
+) else (
+    echo   OK  node_modules already present - skipping npm install
+)
 
+:: ── 5. Frontend — build (skipped if bundle already exists) ───────────────────
 echo.
-echo [5/5] Building frontend bundle...
-npm run build
-if errorlevel 1 ( echo   ERROR: npm run build failed & pause & exit /b 1 )
-echo   OK  Frontend bundle built
-cd ..
+echo [5/5] Frontend bundle...
+
+if not exist "project\dist\bundle.js" (
+    cd project
+    npm run build
+    if errorlevel 1 ( echo   ERROR: npm run build failed & pause & exit /b 1 )
+    echo   OK  Frontend bundle built
+    cd ..
+) else (
+    echo   OK  Bundle already exists - skipping build
+    echo   TIP: Delete project\dist\bundle.js to force a rebuild next run.
+)
 
 :: ── 6. Launch ──────────────────────────────────────────────────────────────────
 echo.
-echo Starting Delta Pitwall server...
-echo.
-echo   +-----------------------------------------------------+
-echo   ^|  Open in your browser:                              ^|
-echo   ^|                                                     ^|
-echo   ^|  http://localhost:8000/app/Pit%%20Wall.html         ^|
-echo   ^|                                                     ^|
-echo   ^|  Press Ctrl+C to stop.                              ^|
-echo   +-----------------------------------------------------+
+echo Starting server...
+echo   Next time you only need:
+echo     .venv\Scripts\activate.bat
+echo     python -m src.web.pit_wall_server
 echo.
 
 python -m src.web.pit_wall_server %*
