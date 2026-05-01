@@ -435,6 +435,35 @@ function resolveOverpassBranch(crossing, samples) {
   return { overU, underU, overY, underY };
 }
 
+// FastF1-derived centerlines have downward Y dives at self-crossings — the
+// publisher's interpolator collapses the over/under branches' Y where their
+// XZ overlaps. On Suzuka the over-branch shows two adjacent points at ~36 m
+// inside surrounding terrain at ~45 m; Catmull-Rom turns that into a visible
+// sag in the ribbon. Run an asymmetric 7-point median filter and replace
+// any control point whose Y is `threshold` metres below its window median
+// with the median itself. Asymmetric (downward only) so legitimate hill
+// peaks aren't flattened. A 7-wide window absorbs dives up to 3 points.
+function repairCenterlineYSpikes(curve, threshold = 3) {
+  const pts = curve.points || [];
+  const n = pts.length;
+  if (n < 7) return 0;
+  const ys = new Float64Array(n);
+  for (let i = 0; i < n; i++) ys[i] = pts[i].y;
+  const win = new Float64Array(7);
+  let repaired = 0;
+  for (let i = 0; i < n; i++) {
+    for (let k = -3; k <= 3; k++) win[k + 3] = ys[(i + k + n) % n];
+    win.sort();
+    const median = win[3];
+    if (pts[i].y < median - threshold) {
+      pts[i].y = median;
+      repaired++;
+    }
+  }
+  if (repaired > 0) curve.updateArcLengths();
+  return repaired;
+}
+
 function applyAutoBridgeTunnels(curve) {
   const pts = curve.points || [];
   const n = pts.length;
@@ -454,17 +483,20 @@ function applyAutoBridgeTunnels(curve) {
     const { overU, underU, overY, underY } = resolveOverpassBranch(c, samples);
 
     const currentClearance = overY - underY;
-    const targetClearance = 9.5;
+    const targetClearance = 14;
     const needed = targetClearance - currentClearance;
     if (needed <= 0.6) continue;
 
-    const overLift = Math.min(14, Math.max(3.5, needed * 0.72));
-    const underDrop = Math.min(6.5, Math.max(0, needed - overLift));
+    // Lift the over-branch only; pulling the under-branch down can sink it
+    // below the grid plane / skirt floor and produces the "saggy underpass"
+    // look. The over-branch absorbs the full clearance.
+    const overLift = Math.min(16, Math.max(8, needed));
     const shallowFactor = 1 - Math.min(c.angle, Math.PI * 0.5) / (Math.PI * 0.5);
-    const sigmaU = 0.016 + shallowFactor * 0.018;
+    // Wider bell so the bridge reads as a ramped overpass rather than a
+    // narrow Gaussian speed bump. ~7% of arc length per side at 90° crossings.
+    const sigmaU = 0.034 + shallowFactor * 0.020;
 
     addBellOffset(offsets, overU, overLift, sigmaU);
-    addBellOffset(offsets, underU, -underDrop, sigmaU * 1.1);
     applied++;
   }
 
@@ -622,6 +654,7 @@ function Track3D({
     }
     if (!Number.isFinite(zMin)) zMin = 0;
     const curve = buildCenterlineCurve(circuit, zMin * scale, scale);
+    repairCenterlineYSpikes(curve);
     const autoBridgeCount = applyAutoBridgeTunnels(curve);
     const segments = Math.min(2000, Math.max(400, circuit.length * 2));
 
