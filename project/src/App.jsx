@@ -320,7 +320,7 @@ function App() {
         bestLapCode={bestLapCode}
       />
     ),
-    strategy: <StrategyStrip standings={standings} totalLaps={totalLaps} lap={lap}/>,
+    strategy: <StrategyStrip standings={standings} totalLaps={totalLaps} lap={lap} tWithinLap={tWithinLap}/>,
     compare: <CompareTraces pinned={pinned} secondary={secondary} lap={lap} channel={compareChannel} setChannel={setCompareChannel} tWithinLap={tWithinLap}/>,
     sectors: <SectorTimes pinned={pinned} secondary={secondary} lap={lap} standings={standings}/>,
     feed: <RaceFeed events={FEED}/>,
@@ -336,7 +336,7 @@ function App() {
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>SHIFT + CLICK DRIVER TO COMPARE</div>,
     gap: <GapViz standings={standings} pinned={pinned}/>,
-    gapHistory: <window.GapHistory pinned={pinned} secondary={secondary} onPick={onPick} onShiftPick={onShiftPick} lap={lap}/>,
+    gapHistory: <window.GapHistory pinned={pinned} secondary={secondary} onPick={onPick} onShiftPick={onShiftPick} lap={lap} tWithinLap={tWithinLap}/>,
     track: (
       <div className="scanline" style={{
         width: "100%", height: "100%", position: "relative",

@@ -16,7 +16,7 @@ const COMPOUND_KEY = {
 };
 
 // Stint strategy strip for top-10 drivers — uses real stint & pit stop data
-function StrategyStrip({ standings, totalLaps, lap }) {
+function StrategyStrip({ standings, totalLaps, lap, tWithinLap }) {
   const T = window.THEME;
   const top = standings.slice(0, 10);
   return (
@@ -82,7 +82,7 @@ function StrategyStrip({ standings, totalLaps, lap }) {
                 ))}
                 {/* Current lap marker */}
                 <div style={{
-                  position: "absolute", left: `${(lap / totalLaps) * 100}%`,
+                  position: "absolute", left: `${(Math.max(0, lap - 1 + (tWithinLap || 0)) / Math.max(totalLaps, 1)) * 100}%`,
                   top: -2, bottom: -2, width: 1, background: "#FFFFFF",
                   zIndex: 3,
                 }}/>
@@ -144,7 +144,7 @@ function GapViz({ standings, pinned }) {
 
 // Spaghetti chart: every driver as a thin colored line, x = lap, y = gap to leader.
 // Pit stops appear as small dots; SC/VSC/red bands as faint vertical washes.
-function GapHistory({ pinned, secondary, onPick, onShiftPick, lap }) {
+function GapHistory({ pinned, secondary, onPick, onShiftPick, lap, tWithinLap }) {
   const T = window.THEME;
   const [data, setData] = React.useState(null);
   const [loadErr, setLoadErr] = React.useState(null);
@@ -316,9 +316,8 @@ function GapHistory({ pinned, secondary, onPick, onShiftPick, lap }) {
   }, [hoverCode, onPick, onShiftPick]);
 
   // Current-lap marker
-  const lapX = totalLaps > 0
-    ? padL + (innerW * Math.max(0, Math.min(totalLaps, lap || 0))) / totalLaps
-    : null;
+  const lapPos = Math.max(0, Math.min(totalLaps, (lap - 1) + (tWithinLap || 0)));
+  const lapX = totalLaps > 0 ? padL + (innerW * lapPos) / totalLaps : null;
 
   return (
     <div className="delta-panel-mount" style={{
