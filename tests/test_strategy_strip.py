@@ -4,8 +4,8 @@ from _precompute_lap_data → build_snapshot → JS API shape.
 
 Run:  python -m pytest tests
 """
-import sys, json
-from unittest.mock import MagicMock, patch
+import sys
+from unittest.mock import MagicMock
 
 # ── 1. Test _precompute_lap_data with synthetic laps ──────────────────────
 

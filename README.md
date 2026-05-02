@@ -1,23 +1,45 @@
 <div align="center">
+  <img src="docs/screenshots/slide1-readme.png" alt="Delta Pitwall Main">
 
-![Delta Pitwall Main](docs/screenshots/slide1-readme.png)
+  <p>
+    <img alt="React" src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=111111">
+    <img alt="Three.js" src="https://img.shields.io/badge/Three.js-111111?style=for-the-badge&logo=threedotjs&logoColor=white">
+    <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white">
+    <img alt="FastF1" src="https://img.shields.io/badge/FastF1-F4C430?style=for-the-badge&logo=python&logoColor=111111">
+    <img alt="PyArrow" src="https://img.shields.io/badge/PyArrow-EE7A00?style=for-the-badge">
+  </p>
+  
+  <h1>What is it?</h1>
+
+  <p>Delta is a browser-based Formula 1 race engineer console built on FastF1. Load a session, scrub the race, pin drivers, compare telemetry, inspect stint strategy, and flip between wide 3D replay and cockpit POV.</p>
+
+  <p>Built with React, Three.js, FastAPI, and a cache-first Arrow pipeline, so replay data opens fast once a session has been prepared.</p>
+
+   <p>
+    <a href="#what-you-get">What You Get</a> •
+    <a href="#feature-tour">Feature Tour</a> •
+    <a href="#prerequisites">Prerequisites</a> •
+    <a href="#quick-start">Quick Start</a> •
+    <a href="#panel-map">Panel Map</a> •
+    <a href="#technical-notes">Technical Notes</a>
+  </p>
 
 </div>
 
-## What It Is
+## What You Get
 
-Delta Pitwall turns FastF1 session data into a browser-based race engineer console. Load a race, scrub through it, pin drivers, compare telemetry, inspect stint strategy, watch gaps evolve, and jump between wide circuit views and in-cockpit replay.
+Delta Pitwall turns FastF1 session data into a proper browser pit wall. Load a race, pin a driver, compare another one against them, watch stint strategy unfold, follow the gap story lap by lap, and jump between trackside replay and in-car view without bouncing between tools.
 
-The stack is a React frontend, a FastAPI + Uvicorn backend, and a cache-first data pipeline that writes deterministic Arrow snapshots, so cached races load instantly without re-fetching from FastF1.
-
-## Prerequisites
-
-- Python 3.9+: download and install from [python.org/downloads](https://www.python.org/downloads/)
-- Node.js 18+: download and install from [nodejs.org/en/download](https://nodejs.org/en/download/)
+- Ten dockable panels across a three-rail desktop layout
+- Timing tower, driver cards, sector status, and lap colouring
+- Telemetry overlays for speed, throttle, brake, gear, and RPM
+- Stint strategy, gap bars, spaghetti chart, and race-control feed
+- Three.js circuit replay with chase, top-down, POV, and IsoTrack views
+- Warm-cache loading through `RacePicker` and deterministic Arrow snapshots
 
 ## Feature Tour
 
-### Full Pit Wall Console
+### Full Pit Wall Layout
 
 - Ten dockable panels arranged across a three-rail desktop layout
 - Panels can collapse, maximize, hide, and pop out into their own window
@@ -31,15 +53,15 @@ The stack is a React frontend, a FastAPI + Uvicorn backend, and a cache-first da
 
 ![3D circuit replay](docs/screenshots/webglslide-readme.png)
 
-### Cockpit POV
+### Driver POV
 
 - First-person mode from the pinned driver's car
 - Live steering-wheel HUD with speed, gear, throttle, brake, DRS, tyre, lap, and flag information
-- Includes a tuning panel for HUD placement and emissive settings when you need to refine the look
+- Includes a tuning panel for HUD placement and emissive settings when you want to dial the look in
 
 ![Cockpit POV](docs/screenshots/cockpitslide-readme.png)
 
-### Classification and Driver Focus
+### Timing and Driver Focus
 
 - Engineering-style timing tower with sector status, gaps, intervals, and lap colouring
 - Primary and compare driver cards with speed, gear, throttle, brake, RPM, DRS, and tyre state
@@ -54,7 +76,7 @@ The stack is a React frontend, a FastAPI + Uvicorn backend, and a cache-first da
 
 ![Telemetry compare](docs/screenshots/traceslide-readme.png)
 
-### Strategy, Gaps, and the Spaghetti View
+### Strategy, Gaps, and Race Story
 
 - Stint bars for the top 10 with compound colouring, pit-stop ticks, and current-lap marker
 - Gap-to-leader bars for a fast read of race spread
@@ -63,39 +85,28 @@ The stack is a React frontend, a FastAPI + Uvicorn backend, and a cache-first da
 
 ![Strategy, gaps, and gap history](docs/screenshots/gapsslide-readme.png)
 
-### Replay Timeline and Session Control
+### Replay Control and RacePicker
 
 - Play, pause, seek, speed controls, and live timeline scrubbing
 - Top bar with flag state, lap counter, race clock, air temperature, track temperature, and humidity
 - Timeline overlays for laps, sectors, and safety-car periods
 - Hotkeys for fast replay control and camera switching
-
-### RacePicker and Warm Starts
-
-- Built-in RacePicker flow for season, round, and session selection
+- Built-in `RacePicker` flow for season, round, and session selection
 - Cached races are surfaced quickly through the web-cache index
 - Warm-cache loads reuse computed replay data instead of rebuilding it
 
 ![RacePicker](docs/screenshots/racepickerslide-readme.png)
 
-## Panel Map
+## Prerequisites
 
-| Panel | What it shows |
-|---|---|
-| `CLASSIFICATION` | Live race order, gaps, intervals, sector state, and lap colouring |
-| `CIRCUIT VIEW` | 3D track replay, chase/POV/top modes, labels, and overlays |
-| `STRATEGY` | Tyre stints, pit windows, and lap marker |
-| `COMPARE TRACES` | Speed, throttle, brake, gear, and RPM overlays |
-| `SECTOR TIMES` | Split-by-split comparison for selected drivers |
-| `RACE CONTROL` | Time-filtered race-control messages |
-| `PRIMARY DRIVER` | Detailed telemetry card for the pinned driver |
-| `COMPARE DRIVER` | Side-by-side telemetry card for the comparison driver |
-| `GAP VISUALIZATION` | Live gap-to-leader bars |
-| `GAP HISTORY` | Race-long spaghetti chart with pit markers and status overlays |
+Install these before your first run:
+
+- [Python 3.9+](https://www.python.org/downloads/)
+- [Node.js 18+](https://nodejs.org/en/download/)
 
 ## Quick Start
 
-> **First time only.** Run one script: it checks prerequisites, creates a virtual environment, installs all Python and Node dependencies, builds the frontend bundle, and starts the server. On later runs it skips work that is already done.
+> First run only. Use one script and let it handle the setup. Check Technical Notes for manual setup.
 
 **macOS / Linux**
 
@@ -115,19 +126,9 @@ bash scripts/start.sh
 scripts\start.bat
 ```
 
-When the server is ready the URL is printed in the terminal.
+When the server is ready, it prints the local URL in the terminal.
 
-Any CLI flags are passed straight through to the server:
-
-```bash
-bash scripts/start.sh --year 2025 --round 12 --session-type R
-```
-
-If you start without `--year` and `--round` the app opens into `RacePicker`.
-
-## Subsequent Runs
-
-Once the venv and bundle exist you don't need the script. Just activate and run:
+After the first run, skip setup and start the server directly:
 
 **macOS / Linux**
 
@@ -150,9 +151,27 @@ python -m src.web.pit_wall_server
 python -m src.web.pit_wall_server
 ```
 
-## Manual Setup
+## Panel Map
 
-If you prefer to run the first-time setup step by step:
+| Panel | What it shows |
+|---|---|
+| `CLASSIFICATION` | Live race order, gaps, intervals, sector state, and lap colouring |
+| `CIRCUIT VIEW` | 3D track replay, chase/POV/top modes, labels, and overlays |
+| `STRATEGY` | Tyre stints, pit windows, and lap marker |
+| `COMPARE TRACES` | Speed, throttle, brake, gear, and RPM overlays |
+| `SECTOR TIMES` | Split-by-split comparison for selected drivers |
+| `RACE CONTROL` | Time-filtered race-control messages |
+| `PRIMARY DRIVER` | Detailed telemetry card for the pinned driver |
+| `COMPARE DRIVER` | Side-by-side telemetry card for the comparison driver |
+| `GAP VISUALIZATION` | Live gap-to-leader bars |
+| `GAP HISTORY` | Race-long spaghetti chart with pit markers and status overlays |
+
+## Technical Notes
+
+<details>
+<summary>Manual setup</summary>
+
+If you want to do the first-time setup step by step:
 
 ```bash
 # 1. Create and activate a virtual environment
@@ -174,13 +193,10 @@ cd ..
 python -m src.web.pit_wall_server
 ```
 
-Jump straight into a known race:
+</details>
 
-```bash
-python -m src.web.pit_wall_server --year 2025 --round 12 --session-type R
-```
-
-### CLI Flags
+<details>
+<summary>CLI flags</summary>
 
 | Flag | Default | Description |
 |---|---|---|
@@ -191,7 +207,18 @@ python -m src.web.pit_wall_server --year 2025 --round 12 --session-type R
 | `--port` | `8000` | Bind port |
 | `--cache-dir` | `cache/fastf1` | FastF1 HTTP cache directory |
 
-## Development
+Example:
+
+```bash
+python -m src.web.pit_wall_server --year 2025 --round 12 --session-type R
+```
+
+If you omit `--year` and `--round`, the app opens into `RacePicker`.
+
+</details>
+
+<details>
+<summary>Development and hotkeys</summary>
 
 Frontend watch mode:
 
@@ -230,7 +257,10 @@ Useful hotkeys:
 | `N` | Toggle mini-map |
 | `R` | Restart replay from the beginning |
 
-## Architecture
+</details>
+
+<details>
+<summary>Architecture and session lifecycle</summary>
 
 ```mermaid
 flowchart TB
@@ -291,9 +321,7 @@ flowchart TB
     class FASTF1,BUILD ingest
 ```
 
-### Cache-First Session Lifecycle
-
-`SessionManager.load(year, round, session_type)` follows the flow below, with a fast warm-cache path and a rebuild path only when the cache is missing or stale.
+`SessionManager.load(year, round, session_type)` follows a warm-cache path when replay data already exists and a rebuild path only when the cache is missing or stale.
 
 ```mermaid
 flowchart TD
@@ -330,9 +358,12 @@ flowchart TD
 1. Warm cache: validate `computed_data/web/v1/*.arrow` plus `.meta.json`, open the Arrow handle, and hydrate runtime state directly.
 2. Cold build: load the FastF1 session, build the deterministic dataset, write Arrow + metadata, then reopen from cache.
 
-## API Summary
+</details>
 
-### REST Endpoints
+<details>
+<summary>API summary</summary>
+
+### REST endpoints
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -358,7 +389,10 @@ flowchart TD
 |---|---|
 | `/ws/telemetry` | Snapshot on connect, then live replay frame updates |
 
-## Project Layout
+</details>
+
+<details>
+<summary>Project layout and notes</summary>
 
 ```text
 .
@@ -379,12 +413,12 @@ flowchart TD
 `- README.md
 ```
 
-## Notes
-
 - `project/assets/` is generated by the frontend build and intentionally ignored.
 - `project/dist/` is generated output and intentionally ignored.
 - Cached replay data under `computed_data/` and HTTP cache data under `cache/` are runtime artifacts, not source.
 - To force a web cache rebuild, remove the relevant Arrow files or set `DELTA_FORCE_WEB_CACHE_REBUILD=1` when starting the server.
+
+</details>
 
 ## Asset Credits
 

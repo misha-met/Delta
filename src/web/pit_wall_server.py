@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 
 from src.web.session_manager import SessionManager, loading_state
 from src.web.ws_hub import WSHub
-from src.web.playback import Playback, build_snapshot, standings_from_frame
+from src.web.playback import Playback, build_snapshot
 from src.web.http_routes import register_http
 from src.web.ws_routes import register_ws
 

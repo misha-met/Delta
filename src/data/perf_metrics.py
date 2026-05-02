@@ -5,7 +5,6 @@ import sys
 import threading
 import time
 from collections import defaultdict, deque
-from contextlib import contextmanager
 
 import numpy as np
 
@@ -30,30 +29,10 @@ def log(message: str) -> None:
     sys.stderr.flush()
 
 
-@contextmanager
-def timed(label: str):
-    started = time.perf_counter()
-    try:
-        yield
-    finally:
-        elapsed_s = time.perf_counter() - started
-        log(f"{label}={elapsed_s * 1000.0:.3f}ms")
-
-
 def record_sample(metric: str, seconds: float) -> None:
     with _LOCK:
         _SAMPLES[metric].append(float(seconds))
         _COUNTERS[f"{metric}:count"] += 1
-
-
-def bump_counter(metric: str, amount: int = 1) -> None:
-    with _LOCK:
-        _COUNTERS[metric] += int(amount)
-
-
-def counter(metric: str) -> int:
-    with _LOCK:
-        return int(_COUNTERS.get(metric, 0))
 
 
 def metric_summary(metric: str) -> dict:

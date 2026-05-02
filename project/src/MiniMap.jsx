@@ -2,7 +2,7 @@
 // view loses field context. Pure SVG — track centerline + per-frame driver
 // pips. Click a pip to pin the driver, shift-click to compare.
 
-const { TEAMS: MM_TEAMS, CIRCUIT: MM_CIRCUIT } = window.DELTA;
+const { TEAMS: MM_TEAMS } = window.DELTA;
 const MM_FALLBACK = "#9AA3B2";
 
 function MiniMap({ standings, pinned, secondary, onPickDriver, width = 168 }) {

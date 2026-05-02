@@ -1,6 +1,6 @@
 // Top-level app — stitches it all together.
 
-const { DRIVERS, TEAMS, CIRCUIT, computeStandings, telemetryFor } = window.DELTA;
+const { CIRCUIT, computeStandings, telemetryFor } = window.DELTA;
 const { buildHotkeyHandler } = window.DELTA_HOTKEY;
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
@@ -9,14 +9,6 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "tiltDefault": 62,
   "rotateDefault": -18
 }/*EDITMODE-END*/;
-
-function fmtClock(secs) {
-  if (typeof secs === "string") return secs;
-  const h = Math.floor(secs / 3600);
-  const m = Math.floor((secs % 3600) / 60);
-  const s = Math.floor(secs % 60);
-  return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
-}
 
 function fmtRcTime(secs) {
   if (secs == null) return "";

@@ -6,7 +6,6 @@ from src.data import perf_metrics
 from src.f1_data import FPS
 from src.web.ws_hub import WSHub
 from src.web.flags import FlagBisectByTime, FLAG_MAP
-from src.web.serialization import safe_jsonable
 
 PUSH_HZ = 60
 MIN_PUSH_INTERVAL = 1.0 / PUSH_HZ

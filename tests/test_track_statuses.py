@@ -6,7 +6,7 @@ Tests for track_statuses pipeline:
 
 Run:  python -m pytest tests
 """
-import sys, json, types
+import sys, types
 from pathlib import Path
 from unittest.mock import MagicMock
 

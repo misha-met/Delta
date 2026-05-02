@@ -2,7 +2,7 @@
 // Supports: rotate, zoom, driver labels toggle,
 // safety car deployment animation, clickable cars.
 
-const { TEAMS, DRIVERS, COMPOUNDS } = window.DELTA;
+const { TEAMS } = window.DELTA;
 const FALLBACK_TEAM_COLOR = "#9AA3B2";
 
 // Bounding box of the circuit → viewport
@@ -177,18 +177,6 @@ function DriverLabel({ code, teamColor, labelStatus }) {
       )}
     </g>
   );
-}
-
-function sliceRange(start, end, circuit) {
-  const out = [];
-  const n = circuit.length;
-  if (start < end) {
-    for (let i = start; i <= end; i++) out.push(circuit[i]);
-  } else {
-    for (let i = start; i < n; i++) out.push(circuit[i]);
-    for (let i = 0; i <= end; i++) out.push(circuit[i]);
-  }
-  return out;
 }
 
 function IsoTrack({
@@ -602,31 +590,6 @@ function SafetyCarGlyph({ sc, circuit, S, OX, OY }) {
         </text>
       </g>
     </g>
-  );
-}
-
-function Compass({ rotateZ }) {
-  // The map rotates by rotateZ, so "north" (map +y-up, which is -y in screen coords)
-  // rotates by the same amount. We rotate the N arrow by rotateZ to match.
-  return (
-    <div style={{
-      position: "absolute",
-      bottom: 14, right: 14,
-      width: 44, height: 44,
-      zIndex: 3,
-      pointerEvents: "none",
-      fontFamily: "JetBrains Mono, monospace",
-    }}>
-      <svg viewBox="-22 -22 44 44" width="44" height="44">
-        <circle r="20" fill="rgba(11,11,17,0.65)" stroke="rgba(255,255,255,0.18)" strokeWidth="1"/>
-        <g transform={`rotate(${rotateZ})`}>
-          <path d="M 0 -14 L 4 4 L 0 1 L -4 4 Z" fill="#FF1E00" stroke="#0B0B11" strokeWidth="0.6"/>
-          <path d="M 0 14 L 4 -4 L 0 -1 L -4 -4 Z" fill="rgba(255,255,255,0.25)"/>
-        </g>
-        <text x="0" y="-15" textAnchor="middle" fontSize="7" fontWeight="700" fill="#F6F6FA" letterSpacing="0.1em"
-          transform={`rotate(${rotateZ})`}>N</text>
-      </svg>
-    </div>
   );
 }
 

@@ -1,7 +1,5 @@
 // Top bar, timeline, controls, tweaks.
 
-const { SECTORS } = window.DELTA;
-
 function TopBar({ session, lap, totalLaps, clock, weather, flagState, safetyCar, extras, leading }) {
   const T = window.THEME;
   return (
@@ -70,16 +68,6 @@ function BigMeta({ label, value, accent }) {
     <div style={{ textAlign: "center", lineHeight: 1.05 }}>
       <div style={{ fontSize: 8, color: T.textDim, letterSpacing: T.ls.caps }}>{label}</div>
       <div style={{ fontSize: T.fs.lg, color: accent || T.textStrong, fontWeight: 700, fontVariantNumeric: "tabular-nums", letterSpacing: T.ls.tight }}>{value}</div>
-    </div>
-  );
-}
-
-function LiveDot() {
-  const T = window.THEME;
-  return (
-    <div style={{ position: "relative", width: 8, height: 8 }}>
-      <div style={{ position: "absolute", inset: 0, borderRadius: 4, background: T.good }}/>
-      <div style={{ position: "absolute", inset: -3, borderRadius: 7, background: T.good, opacity: 0.3, animation: "deltaPulse 1.6s infinite" }}/>
     </div>
   );
 }
