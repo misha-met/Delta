@@ -74,6 +74,18 @@ function classifyRound(round, today) {
   return { state: "future", days };
 }
 
+function rowAffordance(cls) {
+  if (cls.state === "future") return {
+    interactive: false,
+    hint: `SCHEDULED · IN ${cls.days}D`,
+    reasonText: cls.days != null
+      ? `Race not yet available — scheduled in ${cls.days} day${cls.days === 1 ? "" : "s"}.`
+      : "Race not yet available.",
+  };
+  if (cls.state === "live") return { interactive: true, hint: "↵ LOAD · LIVE" };
+  return { interactive: true, hint: "↵ LOAD" };
+}
+
 // ---------------------------------------------------------------------------
 // Subcomponents
 // ---------------------------------------------------------------------------
@@ -301,11 +313,12 @@ function RoundCard({
   isSelected, isLoading, isDisabled, isFuture, isNext, classification,
 }) {
   const [hover, setHover] = React.useState(false);
+  const interactive = !isDisabled && !isFuture;
+  const clickable = !isDisabled;
 
   const accentColor = isNext
     ? TH.hot
-    : (isSelected ? TH.hot : (hover ? "rgba(255,30,0,0.7)" : "transparent"));
-  const interactive = !isDisabled;
+    : (isSelected ? TH.hot : (hover && interactive ? "rgba(255,30,0,0.7)" : "transparent"));
   const flag = flagEmoji(round.country);
   const locationLabel = (round.circuit_name || round.location || "").toUpperCase();
 
@@ -318,9 +331,9 @@ function RoundCard({
 
   return (
     <div
-      onMouseEnter={() => setHover(true)}
+      onMouseEnter={() => interactive && setHover(true)}
       onMouseLeave={() => setHover(false)}
-      onClick={() => interactive && onPick(round)}
+      onClick={() => clickable && onPick(round)}
       role="button"
       tabIndex={interactive ? 0 : -1}
       onKeyDown={(e) => {
@@ -460,7 +473,7 @@ function StatusLine({ children, tone = "muted" }) {
 // Command palette — searches across ALL years.
 // ---------------------------------------------------------------------------
 
-function CommandPalette({ allRoundsByYear, years, loadingYears, onClose, onPick }) {
+function CommandPalette({ allRoundsByYear, years, loadingYears, now, message, onClose, onPick }) {
   const [q, setQ] = React.useState("");
   const [idx, setIdx] = React.useState(0);
   const inputRef = React.useRef(null);
@@ -492,15 +505,37 @@ function CommandPalette({ allRoundsByYear, years, loadingYears, onClose, onPick 
     }).slice(0, 30);
   }, [q, flat]);
 
-  React.useEffect(() => { setIdx(0); }, [q]);
+  const rows = React.useMemo(() => (
+    matches.map((m) => {
+      const cls = classifyRound(m.round, now);
+      return { ...m, cls, aff: rowAffordance(cls) };
+    })
+  ), [matches, now]);
+
+  React.useEffect(() => {
+    setIdx((current) => {
+      if (rows.length === 0) return 0;
+      const clamped = Math.max(0, Math.min(rows.length - 1, current));
+      if (rows[clamped]?.aff.interactive) return clamped;
+      const firstInteractive = rows.findIndex((row) => row.aff.interactive);
+      return firstInteractive >= 0 ? firstInteractive : 0;
+    });
+  }, [rows]);
+
+  const findNextInteractiveIndex = React.useCallback((start, delta) => {
+    for (let i = start + delta; i >= 0 && i < rows.length; i += delta) {
+      if (rows[i]?.aff.interactive) return i;
+    }
+    return start;
+  }, [rows]);
 
   const onKey = (e) => {
     if (e.key === "Escape") { e.preventDefault(); onClose(); return; }
-    if (e.key === "ArrowDown") { e.preventDefault(); setIdx((i) => Math.min(matches.length - 1, i + 1)); return; }
-    if (e.key === "ArrowUp")   { e.preventDefault(); setIdx((i) => Math.max(0, i - 1)); return; }
+    if (e.key === "ArrowDown") { e.preventDefault(); setIdx((i) => findNextInteractiveIndex(i, 1)); return; }
+    if (e.key === "ArrowUp")   { e.preventDefault(); setIdx((i) => findNextInteractiveIndex(i, -1)); return; }
     if (e.key === "Enter") {
       e.preventDefault();
-      const m = matches[idx];
+      const m = rows[idx];
       if (m) onPick(m);
     }
   };
@@ -546,21 +581,25 @@ function CommandPalette({ allRoundsByYear, years, loadingYears, onClose, onPick 
           </div>
         )}
         <div style={{ maxHeight: "55vh", overflow: "auto" }}>
-          {matches.length === 0 && !stillLoading && (
+          {rows.length === 0 && !stillLoading && (
             <div style={{ padding: 16, color: TH.textFaint, fontSize: TH.fs.sm }}>
               NO MATCHES.
             </div>
           )}
-          {matches.map((m, i) => {
-            const { year, round } = m;
+          {rows.map((m, i) => {
+            const { year, round, aff } = m;
             const active = i === idx;
             const flag = flagEmoji(round.country);
             return (
-              <div key={`${year}-${round.round_number}`} onClick={() => onPick(m)} onMouseEnter={() => setIdx(i)} style={{
+              <div key={`${year}-${round.round_number}`}
+                onClick={aff.interactive ? () => onPick(m) : undefined}
+                onMouseEnter={aff.interactive ? () => setIdx(i) : undefined}
+                style={{
                 padding: "10px 16px",
                 background: active ? "rgba(255,30,0,0.12)" : "transparent",
                 borderLeft: active ? `3px solid ${TH.hot}` : "3px solid transparent",
-                cursor: "pointer",
+                cursor: aff.interactive ? "pointer" : "not-allowed",
+                opacity: aff.interactive ? 1 : 0.45,
                 display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12,
               }}>
                 <div>
@@ -580,10 +619,12 @@ function CommandPalette({ allRoundsByYear, years, loadingYears, onClose, onPick 
                 </div>
                 {active && (
                   <div style={{
-                    fontSize: TH.fs.xs, color: TH.hot, fontWeight: 700,
+                    fontSize: TH.fs.xs,
+                    color: aff.interactive ? TH.hot : TH.caution,
+                    fontWeight: 700,
                     letterSpacing: TH.ls.caps,
                   }}>
-                    ↵ LOAD
+                    {aff.hint}
                   </div>
                 )}
               </div>
@@ -597,9 +638,17 @@ function CommandPalette({ allRoundsByYear, years, loadingYears, onClose, onPick 
           letterSpacing: TH.ls.caps,
           display: "flex", gap: 14,
         }}>
-          <span>↑↓ NAVIGATE</span>
-          <span>↵ LOAD</span>
-          <span>ESC CLOSE</span>
+          {message ? (
+            <span style={{ color: TH.caution, letterSpacing: TH.ls.body }}>
+              {message}
+            </span>
+          ) : (
+            <>
+              <span>↑↓ NAVIGATE</span>
+              <span>↵ LOAD</span>
+              <span>ESC CLOSE</span>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -620,6 +669,7 @@ function RacePicker({ onLoadStarted }) {
   const [cacheSet, setCacheSet] = React.useState(() => new Set());
   const [selecting, setSelecting] = React.useState(null);
   const [paletteOpen, setPaletteOpen] = React.useState(false);
+  const [paletteMessage, setPaletteMessage] = React.useState(null);
 
   const [now, setNow] = React.useState(() => new Date());
   React.useEffect(() => {
@@ -694,6 +744,16 @@ function RacePicker({ onLoadStarted }) {
     for (const y of seasonsState.years) ensureYearLoaded(y);
   }, [paletteOpen, seasonsState.years, ensureYearLoaded]);
 
+  React.useEffect(() => {
+    if (!paletteOpen) setPaletteMessage(null);
+  }, [paletteOpen]);
+
+  React.useEffect(() => {
+    if (!paletteMessage) return;
+    const id = setTimeout(() => setPaletteMessage(null), 3500);
+    return () => clearTimeout(id);
+  }, [paletteMessage]);
+
   const roundCounts = React.useMemo(() => {
     const out = {};
     for (const y of Object.keys(allRoundsByYear)) {
@@ -731,7 +791,10 @@ function RacePicker({ onLoadStarted }) {
   const handlePickFromGrid = async (round) => {
     if (selecting != null) return;
     const cls = classifyRound(round, now);
-    if (cls.state === "future") return;
+    if (cls.state === "future") {
+      setYearError((prev) => ({ ...prev, [year]: rowAffordance(cls).reasonText }));
+      return;
+    }
     setSelecting(round.round_number);
     try {
       await CLIENT.post("/api/session/load", {
@@ -747,11 +810,15 @@ function RacePicker({ onLoadStarted }) {
   // From the palette: pick may target any year. Switch active year first
   // for context, then dispatch the load.
   const handlePickFromPalette = async ({ year: pickYear, round }) => {
+    const cls = classifyRound(round, now);
+    if (cls.state === "future") {
+      setPaletteMessage(rowAffordance(cls).reasonText);
+      return;
+    }
+    if (selecting != null) return;
+    setPaletteMessage(null);
     setPaletteOpen(false);
     setYear(pickYear);
-    const cls = classifyRound(round, now);
-    if (cls.state === "future") return;
-    if (selecting != null) return;
     setSelecting(round.round_number);
     try {
       await CLIENT.post("/api/session/load", {
@@ -842,7 +909,7 @@ function RacePicker({ onLoadStarted }) {
                   onPick={handlePickFromGrid}
                   isSelected={selecting === round.round_number}
                   isLoading={selecting === round.round_number}
-                  isDisabled={selecting != null && selecting !== round.round_number || isFuture}
+                  isDisabled={selecting != null && selecting !== round.round_number}
                   isFuture={isFuture}
                   isNext={nextRoundNumber === round.round_number}
                   classification={classification}
@@ -858,6 +925,8 @@ function RacePicker({ onLoadStarted }) {
           allRoundsByYear={allRoundsByYear}
           years={seasonsState.years}
           loadingYears={loadingYears}
+          now={now}
+          message={paletteMessage}
           onClose={() => setPaletteOpen(false)}
           onPick={handlePickFromPalette}
         />
