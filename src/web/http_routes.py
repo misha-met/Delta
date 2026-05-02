@@ -3,9 +3,11 @@ from fastapi import APIRouter, BackgroundTasks, Request
 from src.web.session_manager import loading_state
 from src.web.serialization import safe_jsonable
 from src.web.cache_utils import WEB_CACHE_ROOT
-from src.f1_data import get_race_weekends_by_year
+from src.f1_data import get_race_weekends_by_year, get_season_round_counts
 
 router = APIRouter(prefix="/api")
+SEASON_START_YEAR = 2018
+SEASON_END_YEAR = 2026
 
 
 # ---------------------------------------------------------------------------
@@ -60,7 +62,15 @@ def debug_ws_stats(request: Request):
 
 @router.get("/seasons")
 def seasons():
-    return {"seasons": list(range(2018, 2027))}
+    years = list(range(SEASON_START_YEAR, SEASON_END_YEAR + 1))
+    round_counts = {
+        year: count
+        for year, count in get_season_round_counts(SEASON_START_YEAR, SEASON_END_YEAR)
+    }
+    return safe_jsonable({
+        "seasons": years,
+        "round_counts": round_counts,
+    })
 
 
 @router.get("/seasons/{year}/rounds")

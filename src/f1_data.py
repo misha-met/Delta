@@ -4,6 +4,7 @@ import pickle
 import sys
 import time
 from datetime import timedelta, date
+from functools import lru_cache
 from multiprocessing import Pool, cpu_count
 from pathlib import Path
 
@@ -29,6 +30,27 @@ def enable_cache():
 
     # Enable local cache
     fastf1.Cache.enable_cache(cache_path)
+
+
+@lru_cache(maxsize=32)
+def get_race_round_count_by_year(year):
+    """Return the number of non-testing race weekends for a given year."""
+    enable_cache()
+    schedule = fastf1.get_event_schedule(year)
+    return sum(0 if event.is_testing() else 1 for _, event in schedule.iterrows())
+
+
+@lru_cache(maxsize=8)
+def get_season_round_counts(start_year=2018, end_year=2026):
+    """Return cached `(year, round_count)` pairs for the supported seasons."""
+    counts = []
+    for year in range(start_year, end_year + 1):
+        try:
+            count = get_race_round_count_by_year(year)
+        except Exception:
+            count = None
+        counts.append((year, count))
+    return tuple(counts)
 
 
 FPS = 60

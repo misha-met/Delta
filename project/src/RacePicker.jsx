@@ -660,7 +660,12 @@ function CommandPalette({ allRoundsByYear, years, loadingYears, now, message, on
 // ---------------------------------------------------------------------------
 
 function RacePicker({ onLoadStarted }) {
-  const [seasonsState, setSeasonsState] = React.useState({ loading: true, error: null, years: [] });
+  const [seasonsState, setSeasonsState] = React.useState({
+    loading: true,
+    error: null,
+    years: [],
+    roundCounts: {},
+  });
   const [year, setYear] = React.useState(null);
   const [sessionType, setSessionType] = React.useState("R");
   const [allRoundsByYear, setAllRoundsByYear] = React.useState({}); // year -> rounds[]
@@ -670,6 +675,8 @@ function RacePicker({ onLoadStarted }) {
   const [selecting, setSelecting] = React.useState(null);
   const [paletteOpen, setPaletteOpen] = React.useState(false);
   const [paletteMessage, setPaletteMessage] = React.useState(null);
+  const allRoundsByYearRef = React.useRef({});
+  const inflightYearLoadsRef = React.useRef(new Map());
 
   const [now, setNow] = React.useState(() => new Date());
   React.useEffect(() => {
@@ -677,17 +684,28 @@ function RacePicker({ onLoadStarted }) {
     return () => clearInterval(id);
   }, []);
 
+  React.useEffect(() => {
+    allRoundsByYearRef.current = allRoundsByYear;
+  }, [allRoundsByYear]);
+
   // Seasons
   React.useEffect(() => {
     let alive = true;
     CLIENT.get("/api/seasons").then((res) => {
       if (!alive) return;
       const ys = (res?.seasons || []).slice().sort((a, b) => b - a);
-      setSeasonsState({ loading: false, error: null, years: ys });
+      const metaCounts = {};
+      const rawCounts = res?.round_counts || {};
+      for (const [key, value] of Object.entries(rawCounts)) {
+        const y = Number(key);
+        if (!Number.isFinite(y) || value == null) continue;
+        metaCounts[y] = value;
+      }
+      setSeasonsState({ loading: false, error: null, years: ys, roundCounts: metaCounts });
       if (ys.length) setYear(ys[0]);
     }).catch((e) => {
       if (!alive) return;
-      setSeasonsState({ loading: false, error: String(e?.message || e), years: [] });
+      setSeasonsState({ loading: false, error: String(e?.message || e), years: [], roundCounts: {} });
     });
     return () => { alive = false; };
   }, []);
@@ -709,29 +727,45 @@ function RacePicker({ onLoadStarted }) {
   // Lazy-load rounds for any year on demand. Used by both the visible grid
   // (single year) and the command palette (all years).
   const ensureYearLoaded = React.useCallback((y) => {
-    if (y == null) return;
-    if (allRoundsByYear[y] != null) return;
-    if (loadingYears.has(y)) return;
+    if (y == null) return Promise.resolve(null);
+    const cached = allRoundsByYearRef.current[y];
+    if (cached != null) return Promise.resolve(cached);
+    const inflight = inflightYearLoadsRef.current.get(y);
+    if (inflight) return inflight;
     setLoadingYears((prev) => {
+      if (prev.has(y)) return prev;
       const next = new Set(prev); next.add(y); return next;
     });
-    CLIENT.get(`/api/seasons/${y}/rounds`).then((res) => {
+    const request = CLIENT.get(`/api/seasons/${y}/rounds`).then((res) => {
       const list = res && res.error
         ? []
         : (Array.isArray(res) ? res : (res?.rounds || []));
-      setAllRoundsByYear((prev) => ({ ...prev, [y]: list }));
+      setAllRoundsByYear((prev) => {
+        const next = { ...prev, [y]: list };
+        allRoundsByYearRef.current = next;
+        return next;
+      });
       if (res && res.error) {
         setYearError((prev) => ({ ...prev, [y]: String(res.error) }));
       }
+      return list;
     }).catch((e) => {
-      setAllRoundsByYear((prev) => ({ ...prev, [y]: [] }));
+      setAllRoundsByYear((prev) => {
+        const next = { ...prev, [y]: [] };
+        allRoundsByYearRef.current = next;
+        return next;
+      });
       setYearError((prev) => ({ ...prev, [y]: String(e?.message || e) }));
+      return [];
     }).finally(() => {
+      inflightYearLoadsRef.current.delete(y);
       setLoadingYears((prev) => {
         const next = new Set(prev); next.delete(y); return next;
       });
     });
-  }, [allRoundsByYear, loadingYears]);
+    inflightYearLoadsRef.current.set(y, request);
+    return request;
+  }, []);
 
   // Selected-year rounds
   React.useEffect(() => {
@@ -755,13 +789,13 @@ function RacePicker({ onLoadStarted }) {
   }, [paletteMessage]);
 
   const roundCounts = React.useMemo(() => {
-    const out = {};
+    const out = { ...(seasonsState.roundCounts || {}) };
     for (const y of Object.keys(allRoundsByYear)) {
       const arr = allRoundsByYear[y];
       if (Array.isArray(arr)) out[y] = arr.length;
     }
     return out;
-  }, [allRoundsByYear]);
+  }, [allRoundsByYear, seasonsState.roundCounts]);
 
   const currentRounds = year != null ? (allRoundsByYear[year] || null) : null;
   const currentLoading = year != null && currentRounds == null && loadingYears.has(year);
