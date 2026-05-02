@@ -608,7 +608,7 @@ window.DELTA = {
   // ms of render-side delay applied to the live buffer so we always interpolate
   // between two received frames instead of clamping to the latest one when a
   // frame lands late. Higher = smoother but more lagged. Tunable at runtime.
-  RENDER_DELAY_MS: 220,
+  RENDER_DELAY_MS: 80,
 };
 window.APEX = window.DELTA;
 window.DELTA_DATA_READY = DELTA_DATA_READY;

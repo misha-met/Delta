@@ -8,12 +8,30 @@ const MM_FALLBACK = "#9AA3B2";
 function MiniMap({ standings, pinned, secondary, onPickDriver, width = 168 }) {
   const T = window.THEME;
   const [geomVer, setGeomVer] = React.useState(() => window.DELTA?.geometryVersion || 0);
+  const [tickedStandings, setTickedStandings] = React.useState(standings);
 
   React.useEffect(() => {
     const onVer = (e) => setGeomVer(e.detail?.version ?? (window.DELTA?.geometryVersion || 0));
     window.addEventListener("delta:geometry-version", onVer);
     return () => window.removeEventListener("delta:geometry-version", onVer);
   }, []);
+
+  React.useEffect(() => {
+    let raf = null;
+    const tick = (now) => {
+      const delay = window.DELTA?.RENDER_DELAY_MS ?? 80;
+      const sampler = window.DELTA?.sampleStandingsAt;
+      if (sampler && window.DELTA?.INTERPOLATE !== false) {
+        const s = sampler(now - delay);
+        setTickedStandings(s || standings);
+      } else {
+        setTickedStandings(standings);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [standings]);
 
   const view = React.useMemo(() => {
     const C = window.DELTA.CIRCUIT;
@@ -65,7 +83,7 @@ function MiniMap({ standings, pinned, secondary, onPickDriver, width = 168 }) {
           FIELD MAP
         </div>
         <div style={{ fontFamily: T.mono, fontSize: 8, color: "rgba(180,180,200,0.4)", letterSpacing: T.ls.caps }}>
-          {standings.filter((s) => s.status !== "OUT").length}
+          {tickedStandings.filter((s) => s.status !== "OUT").length}
         </div>
       </div>
       <svg
@@ -77,7 +95,7 @@ function MiniMap({ standings, pinned, secondary, onPickDriver, width = 168 }) {
         {/* Flip Y so north is up (world coords have +y north; SVG has +y down) */}
         <g transform={`translate(0, ${view.minY * 2 + view.h}) scale(1, -1)`}>
           <path d={pathD} fill="none" stroke="rgba(180,180,200,0.5)" strokeWidth={stroke} strokeLinejoin="round"/>
-          {standings.map((s) => {
+          {tickedStandings.map((s) => {
             if (s.status === "OUT") return null;
             const p = window.DELTA.CIRCUIT[s.trackIdx];
             if (!p) return null;
