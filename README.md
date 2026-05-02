@@ -1,22 +1,13 @@
 <div align="center">
   <img src="docs/screenshots/slide1-readme.png" alt="Delta Pitwall Main">
-
-  <p>
-    <img alt="React" src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=111111">
-    <img alt="Three.js" src="https://img.shields.io/badge/Three.js-111111?style=for-the-badge&logo=threedotjs&logoColor=white">
-    <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white">
-    <img alt="FastF1" src="https://img.shields.io/badge/FastF1-F4C430?style=for-the-badge&logo=python&logoColor=111111">
-    <img alt="PyArrow" src="https://img.shields.io/badge/PyArrow-EE7A00?style=for-the-badge">
-  </p>
   
-  <h1>What is it?</h1>
+  <h1>What is Delta?</h1>
 
-  <p>Delta is a browser-based Formula 1 race engineer console built on FastF1. Load a session, scrub the race, pin drivers, compare telemetry, inspect stint strategy, and flip between wide 3D replay and cockpit POV.</p>
+  <p>It is a browser-based Formula 1 race engineer console built on FastF1. Load a session, scrub the race, pin drivers, compare telemetry, inspect stint strategy, and flip between wide 3D replay and cockpit POV.</p>
 
   <p>Built with React, Three.js, FastAPI, and a cache-first Arrow pipeline, so replay data opens fast once a session has been prepared.</p>
 
    <p>
-    <a href="#what-you-get">What You Get</a> •
     <a href="#feature-tour">Feature Tour</a> •
     <a href="#prerequisites">Prerequisites</a> •
     <a href="#quick-start">Quick Start</a> •
