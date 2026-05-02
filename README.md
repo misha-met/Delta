@@ -8,73 +8,73 @@
 
 Delta Pitwall turns FastF1 session data into a browser-based race engineer console. Load a race, scrub through it, pin drivers, compare telemetry, inspect stint strategy, watch gaps evolve, and jump between wide circuit views and in-cockpit replay.
 
-The stack is a React frontend, a FastAPI + Uvicorn backend, and a cache-first data pipeline that writes deterministic Arrow snapshots — so cached races load instantly without re-fetching from FastF1.
+The stack is a React frontend, a FastAPI + Uvicorn backend, and a cache-first data pipeline that writes deterministic Arrow snapshots, so cached races load instantly without re-fetching from FastF1.
 
 ## Prerequisites
 
-- Python 3.9+ — download and install from [python.org/downloads](https://www.python.org/downloads/)
-- Node.js 18+ — download and install from [nodejs.org/en/download](https://nodejs.org/en/download/)
+- Python 3.9+: download and install from [python.org/downloads](https://www.python.org/downloads/)
+- Node.js 18+: download and install from [nodejs.org/en/download](https://nodejs.org/en/download/)
 
 ## Feature Tour
 
 ### Full Pit Wall Console
 
-- 10 dockable panels arranged across a three-rail desktop layout
-- panels can collapse, maximize, hide, and pop out into their own window
-- layout and view preferences persist in `localStorage`
+- Ten dockable panels arranged across a three-rail desktop layout
+- Panels can collapse, maximize, hide, and pop out into their own window
+- Layout and view preferences persist in `localStorage`
 
 ### 3D Circuit Replay
 
 - Three.js circuit scene with weather-aware styling and GLB car and safety-car models
-- orbit, chase, POV, top-down, and legacy IsoTrack views
-- floating labels, selection highlights, safety-car overlays, and an optional mini-map
+- Orbit, chase, POV, top-down, and legacy IsoTrack views
+- Floating labels, selection highlights, safety-car overlays, and an optional mini-map
 
 ![3D circuit replay](docs/screenshots/webglslide-readme.png)
 
 ### Cockpit POV
 
-- first-person mode from the pinned driver's car
-- live steering-wheel HUD with speed, gear, throttle, brake, DRS, tyre, lap, and flag information
-- includes a tuning panel for HUD placement and emissive settings when you need to refine the look
+- First-person mode from the pinned driver's car
+- Live steering-wheel HUD with speed, gear, throttle, brake, DRS, tyre, lap, and flag information
+- Includes a tuning panel for HUD placement and emissive settings when you need to refine the look
 
 ![Cockpit POV](docs/screenshots/cockpitslide-readme.png)
 
 ### Classification and Driver Focus
 
-- engineering-style timing tower with sector status, gaps, intervals, and lap colouring
-- primary and compare driver cards with speed, gear, throttle, brake, RPM, DRS, and tyre state
-- click a driver to pin them, `Shift + Click` to compare against a second driver
+- Engineering-style timing tower with sector status, gaps, intervals, and lap colouring
+- Primary and compare driver cards with speed, gear, throttle, brake, RPM, DRS, and tyre state
+- Click a driver to pin them, `Shift + Click` to compare against a second driver
 
 ### Telemetry Compare
 
-- lap overlays for speed, throttle, brake, gear, and RPM
-- live playhead synced to replay progress
-- sector times panel for quick split comparison
-- useful for showing where one driver gains, brakes later, or gets traction down earlier
+- Lap overlays for speed, throttle, brake, gear, and RPM
+- Live playhead synced to replay progress
+- Sector times panel for quick split comparison
+- Useful for showing where one driver gains, brakes later, or gets traction down earlier
 
 ![Telemetry compare](docs/screenshots/traceslide-readme.png)
 
 ### Strategy, Gaps, and the Spaghetti View
 
-- stint bars for the top 10 with compound colouring, pit-stop ticks, and current-lap marker
-- gap-to-leader bars for a fast read of race spread
-- gap-history spaghetti chart for the full race story over time
-- race-control feed layered into the same console for flags, safety car, DRS, and other key events
+- Stint bars for the top 10 with compound colouring, pit-stop ticks, and current-lap marker
+- Gap-to-leader bars for a fast read of race spread
+- Gap-history spaghetti chart for the full race story over time
+- Race-control feed layered into the same console for flags, safety car, DRS, and other key events
 
 ![Strategy, gaps, and gap history](docs/screenshots/gapsslide-readme.png)
 
 ### Replay Timeline and Session Control
 
-- play, pause, seek, speed controls, and live timeline scrubbing
-- top bar with flag state, lap counter, race clock, air temperature, track temperature, and humidity
-- timeline overlays for laps, sectors, and safety-car periods
-- hotkeys for fast replay control and camera switching
+- Play, pause, seek, speed controls, and live timeline scrubbing
+- Top bar with flag state, lap counter, race clock, air temperature, track temperature, and humidity
+- Timeline overlays for laps, sectors, and safety-car periods
+- Hotkeys for fast replay control and camera switching
 
 ### RacePicker and Warm Starts
 
-- built-in RacePicker flow for season, round, and session selection
-- cached races are surfaced quickly through the web-cache index
-- warm-cache loads reuse computed replay data instead of rebuilding it
+- Built-in RacePicker flow for season, round, and session selection
+- Cached races are surfaced quickly through the web-cache index
+- Warm-cache loads reuse computed replay data instead of rebuilding it
 
 ![RacePicker](docs/screenshots/racepickerslide-readme.png)
 
@@ -95,7 +95,7 @@ The stack is a React frontend, a FastAPI + Uvicorn backend, and a cache-first da
 
 ## Quick Start
 
-> **First time only.** Run one script — it handles everything: checks prerequisites, creates a virtual environment, installs all Python and Node dependencies, builds the frontend bundle, and starts the server. On every run after the first it skips steps that are already done.
+> **First time only.** Run one script: it checks prerequisites, creates a virtual environment, installs all Python and Node dependencies, builds the frontend bundle, and starts the server. On later runs it skips work that is already done.
 
 **macOS / Linux**
 
@@ -103,13 +103,13 @@ The stack is a React frontend, a FastAPI + Uvicorn backend, and a cache-first da
 bash scripts/start.sh
 ```
 
-**Windows — PowerShell**
+**Windows PowerShell**
 
 ```powershell
 .\scripts\start.ps1
 ```
 
-**Windows — Command Prompt**
+**Windows Command Prompt**
 
 ```bat
 scripts\start.bat
@@ -136,14 +136,14 @@ source .venv/bin/activate
 python -m src.web.pit_wall_server
 ```
 
-**Windows — PowerShell**
+**Windows PowerShell**
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 python -m src.web.pit_wall_server
 ```
 
-**Windows — Command Prompt**
+**Windows Command Prompt**
 
 ```bat
 .venv\Scripts\activate.bat
@@ -234,45 +234,98 @@ Useful hotkeys:
 
 ```mermaid
 flowchart TB
-    subgraph PY["Python process - src.web.pit_wall_server"]
-        SM["SessionManager<br/>cache-first loader"]
-        PB["Playback<br/>25 Hz tick"]
-        WS["WS Hub<br/>/ws/telemetry"]
-        HTTP["FastAPI REST<br/>/api/*"]
-        STATIC["Static mount<br/>/app -> project/"]
-        SM --> PB --> WS
-        SM --> HTTP
-        STATIC --> HTTP
-    end
+    classDef browser fill:#fff7ed,stroke:#ea580c,color:#111827,stroke-width:1.5px;
+    classDef server fill:#eff6ff,stroke:#2563eb,color:#111827,stroke-width:1.5px;
+    classDef cache fill:#ecfdf5,stroke:#059669,color:#111827,stroke-width:1.5px;
+    classDef ingest fill:#fef2f2,stroke:#dc2626,color:#111827,stroke-width:1.5px;
 
-    subgraph CACHE["Deterministic web cache"]
-        ARROW["computed_data/web/v1/{year}_{round}_{session}.arrow"]
-        META[".meta.json<br/>schema/profile/cache-key validation"]
-    end
-
-    subgraph FF1["FastF1 cold path"]
-        F1API["Telemetry - Weather - Messages"]
-    end
-
-    subgraph BROWSER["Browser"]
-        APP["React root - App.jsx"]
-        TRACK["Track3D / IsoTrack"]
+    subgraph BROWSER["Browser pit wall"]
+        direction LR
         PICKER["RacePicker"]
-        LIVE["window.LIVE.useLive()"]
+        APP["React app<br/>App.jsx"]
+        TRACK["Track3D + IsoTrack"]
+        LIVE["Live state<br/>window.LIVE"]
+        PICKER --> APP
         APP --> TRACK
         APP --> LIVE
-        PICKER --> APP
     end
 
-    SM <--> CACHE
-    SM -. cold cache only .-> FF1
-    HTTP <-->|REST| BROWSER
-    WS <-->|snapshot + frame stream| LIVE
+    subgraph SERVER["Python server<br/>src.web.pit_wall_server"]
+        direction LR
+        STATIC["Static frontend<br/>/app"]
+        HTTP["FastAPI routes<br/>/api/*"]
+        SESSION["SessionManager<br/>cache-first loader"]
+        PLAYBACK["Playback loop<br/>25 Hz tick"]
+        HUB["WS hub<br/>/ws/telemetry"]
+        HTTP --> SESSION
+        SESSION --> PLAYBACK
+        PLAYBACK --> HUB
+    end
+
+    subgraph CACHE["Deterministic replay cache"]
+        direction LR
+        ARROW["Arrow replay file<br/>computed_data/web/v1/*.arrow"]
+        META["Metadata file<br/>.meta.json"]
+    end
+
+    subgraph COLD["Cold build path only"]
+        direction LR
+        FASTF1["FastF1 session data"]
+        BUILD["Dataset build<br/>telemetry + geometry + laps"]
+    end
+
+    APP -->|Load shell + bundle| STATIC
+    PICKER -->|POST /api/session/load| HTTP
+    APP -->|Fetch summary, geometry, results| HTTP
+    LIVE <-->|Snapshot + live frames| HUB
+
+    SESSION <--> ARROW
+    SESSION <--> META
+    SESSION -. Cache miss .-> FASTF1
+    FASTF1 --> BUILD --> ARROW
+    BUILD --> META
+
+    class PICKER,APP,TRACK,LIVE browser
+    class STATIC,HTTP,SESSION,PLAYBACK,HUB server
+    class ARROW,META cache
+    class FASTF1,BUILD ingest
 ```
 
 ### Cache-First Session Lifecycle
 
-`SessionManager.load(year, round, session_type)` takes one of two paths:
+`SessionManager.load(year, round, session_type)` follows the flow below, with a fast warm-cache path and a rebuild path only when the cache is missing or stale.
+
+```mermaid
+flowchart TD
+    classDef entry fill:#fff7ed,stroke:#ea580c,color:#111827,stroke-width:1.5px;
+    classDef io fill:#eff6ff,stroke:#2563eb,color:#111827,stroke-width:1.5px;
+    classDef warm fill:#ecfdf5,stroke:#059669,color:#111827,stroke-width:1.5px;
+    classDef cold fill:#fef2f2,stroke:#dc2626,color:#111827,stroke-width:1.5px;
+
+    START([Pick season, round, and session])
+    REQUEST[POST /api/session/load]
+    CHECK{Valid Arrow cache<br/>and metadata?}
+    HYDRATE[Open Arrow handle<br/>and hydrate replay state]
+    FETCH[Load FastF1 session]
+    BUILD_DATA[Build deterministic dataset]
+    WRITE[Write .arrow cache<br/>plus .meta.json]
+    READY[Expose summary, geometry,<br/>results, and status]
+    PLAY[Start playback loop]
+    STREAM[Push snapshot and live frames<br/>over /ws/telemetry]
+    LIVE_UI([Pit wall console is live])
+
+    START --> REQUEST --> CHECK
+    CHECK -->|Yes, warm cache| HYDRATE
+    CHECK -->|No, cold build| FETCH --> BUILD_DATA --> WRITE --> HYDRATE
+    HYDRATE --> READY
+    HYDRATE --> PLAY --> STREAM --> LIVE_UI
+    READY --> LIVE_UI
+
+    class START,LIVE_UI entry
+    class REQUEST,READY,PLAY,STREAM io
+    class HYDRATE warm
+    class FETCH,BUILD_DATA,WRITE cold
+```
 
 1. Warm cache: validate `computed_data/web/v1/*.arrow` plus `.meta.json`, open the Arrow handle, and hydrate runtime state directly.
 2. Cold build: load the FastF1 session, build the deterministic dataset, write Arrow + metadata, then reopen from cache.
