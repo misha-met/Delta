@@ -8,6 +8,7 @@ const CLIENT = window.DELTA_CLIENT;
 const SESSION_TYPES = [
   { id: "R",  label: "RACE",         long: "LOAD RACE" },
   { id: "Q",  label: "QUALI",        long: "LOAD QUALI" },
+  { id: "S",  label: "SPRINT",       long: "LOAD SPRINT" },
   { id: "SQ", label: "SPRINT QUALI", long: "LOAD SPRINT QUALI" },
 ];
 const SESSION_LABEL = Object.fromEntries(SESSION_TYPES.map((s) => [s.id, s.long]));
@@ -202,12 +203,15 @@ function SessionTypeToggle({ value, onChange }) {
 
 // Session-availability pips: small dots showing which sessions have a warm
 // cache for this round. Replaces the per-card session toggle.
-function SessionPips({ year, round, cacheSet, sessionType }) {
-  const pips = SESSION_TYPES.map((st) => {
-    const cached = cacheSet.has(`${year}_${round}_${st.id}`);
-    const active = st.id === sessionType;
-    return { id: st.id, label: st.id, cached, active };
-  });
+function SessionPips({ year, round, cacheSet, sessionType, sessionDates }) {
+  const isSprintWeekend = !!(sessionDates?.["Sprint"] || sessionDates?.["Sprint Qualifying"]);
+  const pips = SESSION_TYPES
+    .filter((st) => (st.id !== "S" && st.id !== "SQ") || isSprintWeekend)
+    .map((st) => {
+      const cached = cacheSet.has(`${year}_${round}_${st.id}`);
+      const active = st.id === sessionType;
+      return { id: st.id, label: st.id, cached, active };
+    });
   const activeCached = pips.find((p) => p.active)?.cached ?? false;
   return (
     <div title="Cached sessions for this round" style={{
@@ -428,6 +432,7 @@ function RoundCard({
           round={round.round_number}
           cacheSet={cacheSet}
           sessionType={sessionType}
+          sessionDates={round.session_dates}
         />
         <div style={{
           fontSize: TH.fs.xs, fontWeight: 700,
