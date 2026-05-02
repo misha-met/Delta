@@ -62,6 +62,13 @@ function MiniMap({ standings, pinned, secondary, onPickDriver, width = 168 }) {
   const dotR = view.w / 90;
   const dotRBig = view.w / 60;
   const ringW = view.w / 320;
+  const circuit = window.DELTA.CIRCUIT || [];
+  const pointForStanding = (s) => {
+    if (s?.trackIdx != null) return circuit[s.trackIdx] || null;
+    if (!circuit.length || s?.fraction == null) return null;
+    const idx = Math.min(circuit.length - 1, Math.max(0, Math.round((((s.fraction % 1) + 1) % 1) * (circuit.length - 1))));
+    return circuit[idx] || null;
+  };
 
   return (
     <div style={{
@@ -97,7 +104,7 @@ function MiniMap({ standings, pinned, secondary, onPickDriver, width = 168 }) {
           <path d={pathD} fill="none" stroke="rgba(180,180,200,0.5)" strokeWidth={stroke} strokeLinejoin="round"/>
           {tickedStandings.map((s) => {
             if (s.status === "OUT") return null;
-            const p = window.DELTA.CIRCUIT[s.trackIdx];
+            const p = pointForStanding(s);
             if (!p) return null;
             const team = MM_TEAMS[s.driver.team];
             const color = team?.color || MM_FALLBACK;
