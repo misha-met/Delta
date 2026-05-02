@@ -661,6 +661,32 @@ function Track3D({
     const bb = new THREE.Box3();
     const samplePts = curve.getPoints(segments);
     for (const p of samplePts) bb.expandByPoint(p);
+
+    // Flat lookup tables for the per-car projection onto the centerline.
+    // Drivers carry real X/Y telemetry (planar), but we still need an
+    // elevation and a heading per frame — both are taken from the nearest
+    // curve sample to (planarX, planarZ). The arc-length tangent is C^1, so
+    // heading is smooth; elevation tracks the actual section the car is on
+    // rather than the centerline point at the (slightly mismatched) lap
+    // fraction.
+    const curveSampleCount = samplePts.length;
+    const curveSampleX = new Float32Array(curveSampleCount);
+    const curveSampleY = new Float32Array(curveSampleCount);
+    const curveSampleZ = new Float32Array(curveSampleCount);
+    const curveSampleTanX = new Float32Array(curveSampleCount);
+    const curveSampleTanZ = new Float32Array(curveSampleCount);
+    {
+      const _tan = new THREE.Vector3();
+      const denom = Math.max(1, curveSampleCount - 1);
+      for (let i = 0; i < curveSampleCount; i++) {
+        curveSampleX[i] = samplePts[i].x;
+        curveSampleY[i] = samplePts[i].y;
+        curveSampleZ[i] = samplePts[i].z;
+        curve.getTangentAt(i / denom, _tan);
+        curveSampleTanX[i] = _tan.x;
+        curveSampleTanZ[i] = _tan.z;
+      }
+    }
     const center = bb.getCenter(new THREE.Vector3());
     const size = bb.getSize(new THREE.Vector3());
     const extent = Math.max(size.x, size.z, 100);
@@ -1690,21 +1716,62 @@ function Track3D({
         }
         const frac = s.fraction != null ? s.fraction : 0;
         const u = ((frac % 1) + 1) % 1;
-        const p = curve.getPointAt(u, tmpPoint);
-        curve.getTangentAt(u, tmpTan);
-        // Orient the car to follow the track surface in 3D (yaw + pitch)
-        // so it doesn't sink into or float above the track on elevation changes.
-        _fwd.copy(tmpTan).normalize();
+
+        // Real planar position from FastF1 X/Y telemetry — same coord system
+        // as the centerline circuit array, transformed by the same scale.
+        // Falls back to the curve point at `fraction` when telemetry XY is
+        // missing (older sessions or dropped drivers).
+        const sx = Number(s.x);
+        const sy = Number(s.y);
+        const haveRealXY = Number.isFinite(sx) && Number.isFinite(sy);
+        let planarX, planarZ;
+        if (haveRealXY) {
+          planarX = sx * scale;
+          planarZ = -sy * scale;
+        } else {
+          const p = curve.getPointAt(u, tmpPoint);
+          planarX = p.x;
+          planarZ = p.z;
+        }
+
+        // Project (planarX, planarZ) onto the curve via a windowed nearest
+        // sample search, warm-started from the previous frame's index. The
+        // curve sample gives us:
+        //   - elevation Y at the section the car is actually on (avoids
+        //     the above/below-track artefact when the lap-distance fraction
+        //     and the planar projection disagree)
+        //   - tangent for heading (smooth across original 220 ms FastF1
+        //     sample boundaries; motion-derived heading kinks at every
+        //     boundary because the resampler is piecewise linear)
+        let bestIdx = entry.lastCurveIdx;
+        if (bestIdx == null) {
+          bestIdx = Math.min(
+            curveSampleCount - 1,
+            Math.max(0, Math.round(u * (curveSampleCount - 1))),
+          );
+        }
+        const windowHalf = 32;
+        let bestD2 = Infinity;
+        for (let off = -windowHalf; off <= windowHalf; off++) {
+          const j = ((bestIdx + off) % curveSampleCount + curveSampleCount) % curveSampleCount;
+          const ddx = planarX - curveSampleX[j];
+          const ddz = planarZ - curveSampleZ[j];
+          const d2 = ddx * ddx + ddz * ddz;
+          if (d2 < bestD2) { bestD2 = d2; entry._scanBest = j; }
+        }
+        bestIdx = entry._scanBest;
+        entry.lastCurveIdx = bestIdx;
+
+        const curveYHere = curveSampleY[bestIdx];
+        _fwd.set(curveSampleTanX[bestIdx], 0, curveSampleTanZ[bestIdx]).normalize();
         _right.crossVectors(_fwd, _worldUp).normalize();
         _up.crossVectors(_right, _fwd).normalize();
         // Car local frame: +X forward, +Y up, +Z right
         _basis.makeBasis(_fwd, _up, _right);
-        // Position on track surface, offset along the surface normal (up)
-        // so the car sits on top of the track even on slopes.
         _surf.copy(_up).multiplyScalar(TRACK_TOP_Y + CAR_SURFACE_CLEARANCE);
-        const targetX = p.x + _surf.x;
-        const targetY = p.y + _surf.y;
-        const targetZ = p.z + _surf.z;
+        const targetX = planarX + _surf.x;
+        const targetY = curveYHere + _surf.y;
+        const targetZ = planarZ + _surf.z;
         _carTargetQuat.setFromRotationMatrix(_basis);
         // First frame for this car: snap. After that: damp toward target.
         // Smooths kinks at network-frame boundaries in sampleStandingsAt and
