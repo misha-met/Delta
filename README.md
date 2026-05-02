@@ -6,7 +6,7 @@
 
 ## What It Is
 
-Delta Pitwall turns FastF1 session data into something that feels closer to a race-engineer desk than a stats page. Load a race, scrub through it, pin drivers, compare telemetry, inspect stint strategy, watch gaps evolve, and jump between wide circuit views and in-cockpit replay from the browser.
+Delta Pitwall turns FastF1 session data into a browser-based race engineer console. Load a race, scrub through it, pin drivers, compare telemetry, inspect stint strategy, watch gaps evolve, and jump between wide circuit views and in-cockpit replay.
 
 The stack is a React frontend, a FastAPI + Uvicorn backend, and a cache-first data pipeline that writes deterministic Arrow snapshots — so cached races load instantly without re-fetching from FastF1.
 
@@ -22,14 +22,12 @@ The stack is a React frontend, a FastAPI + Uvicorn backend, and a cache-first da
 - 10 dockable panels arranged across a three-rail desktop layout
 - panels can collapse, maximize, hide, and pop out into their own window
 - layout and view preferences persist in `localStorage`
-- top bar, timeline, and panel chrome give the app more of a replay console feel than a simple dashboard
 
 ### 3D Circuit Replay
 
 - Three.js circuit scene with weather-aware styling and GLB car and safety-car models
 - orbit, chase, POV, top-down, and legacy IsoTrack views
 - floating labels, selection highlights, safety-car overlays, and an optional mini-map
-- a central replay view designed to feel live even when scrubbing through cached race data
 
 ![3D circuit replay](docs/screenshots/webglslide-readme.png)
 
@@ -37,7 +35,6 @@ The stack is a React frontend, a FastAPI + Uvicorn backend, and a cache-first da
 
 - first-person mode from the pinned driver's car
 - live steering-wheel HUD with speed, gear, throttle, brake, DRS, tyre, lap, and flag information
-- built for the "inside the cockpit" moments that sell the replay immediately on GitHub
 - includes a tuning panel for HUD placement and emissive settings when you need to refine the look
 
 ![Cockpit POV](docs/screenshots/cockpitslide-readme.png)
@@ -47,12 +44,11 @@ The stack is a React frontend, a FastAPI + Uvicorn backend, and a cache-first da
 - engineering-style timing tower with sector status, gaps, intervals, and lap colouring
 - primary and compare driver cards with speed, gear, throttle, brake, RPM, DRS, and tyre state
 - click a driver to pin them, `Shift + Click` to compare against a second driver
-- strong red/cyan selection language so the important comparison is obvious at a glance
 
 ### Telemetry Compare
 
 - lap overlays for speed, throttle, brake, gear, and RPM
-- live playhead so the traces move with replay progress instead of feeling static
+- live playhead synced to replay progress
 - sector times panel for quick split comparison
 - useful for showing where one driver gains, brakes later, or gets traction down earlier
 
@@ -69,7 +65,7 @@ The stack is a React frontend, a FastAPI + Uvicorn backend, and a cache-first da
 
 ### Replay Timeline and Session Control
 
-- play, pause, seek, and speed controls driven by a server-authoritative replay state
+- play, pause, seek, speed controls, and live timeline scrubbing
 - top bar with flag state, lap counter, race clock, air temperature, track temperature, and humidity
 - timeline overlays for laps, sectors, and safety-car periods
 - hotkeys for fast replay control and camera switching
@@ -78,8 +74,7 @@ The stack is a React frontend, a FastAPI + Uvicorn backend, and a cache-first da
 
 - built-in RacePicker flow for season, round, and session selection
 - cached races are surfaced quickly through the web-cache index
-- warm cache loads skip a full FastF1 rebuild and jump straight into replay hydration
-- loading states make the data pipeline visible instead of feeling like a blank wait screen
+- warm-cache loads reuse computed replay data instead of rebuilding it
 
 ![RacePicker](docs/screenshots/racepickerslide-readme.png)
 
@@ -282,21 +277,17 @@ flowchart TB
 1. Warm cache: validate `computed_data/web/v1/*.arrow` plus `.meta.json`, open the Arrow handle, and hydrate runtime state directly.
 2. Cold build: load the FastF1 session, build the deterministic dataset, write Arrow + metadata, then reopen from cache.
 
-That gives the UI a predictable loading flow:
-
-`Checking web cache` -> `Building web cache` -> `Hydrating replay state` -> `Ready`
-
 ## API Summary
 
 ### REST Endpoints
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/api/seasons` | Available seasons |
+| `GET` | `/api/seasons` | Available seasons and round counts |
 | `GET` | `/api/seasons/{year}/rounds` | Round list for RacePicker |
 | `GET` | `/api/web_cache/index` | Cache badge data for RacePicker |
 | `POST` | `/api/session/load` | Begin non-blocking session load |
-| `GET` | `/api/session/status` | Loading state |
+| `GET` | `/api/session/status` | Loading state, message, and progress |
 | `GET` | `/api/session/summary` | Event, drivers, laps, rotation |
 | `GET` | `/api/session/geometry` | Public track geometry payload |
 | `GET` | `/api/session/race_control` | Race-control messages |
