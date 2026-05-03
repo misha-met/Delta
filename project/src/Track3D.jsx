@@ -69,7 +69,6 @@ import {
   advanceRain,
   buildWheelHud,
   createWheelHudAttachment,
-  buildWheelHudDebugPanel,
   buildPovHud,
   updatePovHud,
   detectUnitScale,
@@ -1373,24 +1372,11 @@ function Track3D({
       state: wheelHudAttach,
       attach: attachWheelHud,
       detach: detachWheelHud,
-      reapply: reapplyWheelHud,
     } = createWheelHudAttachment({
       wheelHud,
       wheelHudQuad,
       getDriverEntry: (code) => driverMap.get(code),
     });
-
-    const wheelHudDebug = buildWheelHudDebugPanel(mount, reapplyWheelHud);
-    const onDebugKey = (e) => {
-      if (e.key === "w" || e.key === "W") {
-        // Don't fire if user is typing in an input field.
-        const t = e.target;
-        const tag = t && t.tagName;
-        if (tag === "INPUT" || tag === "TEXTAREA" || (t && t.isContentEditable)) return;
-        wheelHudDebug.toggle();
-      }
-    };
-    window.addEventListener("keydown", onDebugKey);
 
     // --- Driver meshes ---
     const driverGroup = new THREE.Group();
@@ -2158,8 +2144,6 @@ function Track3D({
       detachWheelHud();
       if (wheelHudQuad.geometry) wheelHudQuad.geometry.dispose();
       wheelHud.dispose();
-      window.removeEventListener("keydown", onDebugKey);
-      wheelHudDebug.root.remove();
       composer.dispose();
       renderTarget.dispose();
       // envTex is module-cached (getRoomEnvironment) — do NOT dispose here.

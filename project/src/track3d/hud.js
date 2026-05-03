@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { TRACK3D_WHEEL_HUD_TUNE } from "./constants.js";
 
 // ───────────────────────────────────────────────────────────────────────────
 // Steering-wheel live HUD — renders an F1-style dashboard onto a CanvasTexture
@@ -10,6 +9,7 @@ import { TRACK3D_WHEEL_HUD_TUNE } from "./constants.js";
 
 const WHEEL_HUD_W = 1024;
 const WHEEL_HUD_H = 512;
+const WHEEL_HUD_EMISSIVE_INTENSITY = 0.75;
 
 // Shift-light strip: classic F1 progression — green (revs in band), amber
 // (approaching shift), red (shift now), then blue flash at the rev limiter.
@@ -46,16 +46,14 @@ function buildWheelHud() {
   // The HUD is rendered onto a PlaneGeometry quad (not the GLTF wheel mesh
   // directly), so standard UV convention applies — leave flipY at its
   // default true.
-  // Mirror the canvas via texture repeat/offset so the geometry pose stays
-  // simple. With repeat = -1 / offset = 1 on a given axis, that axis is
-  // mirrored. The values are applied on every attach (see attachWheelHud)
-  // so live debug-panel toggles take effect immediately.
+  // Mirror state is applied on every attach (see createWheelHudAttachment)
+  // so the quad stays aligned with the wheel screen face.
 
   const material = new THREE.MeshStandardMaterial({
     map: texture,
     emissiveMap: texture,
     emissive: new THREE.Color(0xffffff),
-    emissiveIntensity: TRACK3D_WHEEL_HUD_TUNE.emissiveIntensity,
+    emissiveIntensity: WHEEL_HUD_EMISSIVE_INTENSITY,
     roughness: 0.45,
     metalness: 0.05,
     transparent: false,
@@ -393,144 +391,6 @@ function paintChip(ctx, { x, y, w, h, label, color, filled, fontSize }) {
   ctx.fillText(label, x + w / 2, y + h / 2 + 1);
 }
 
-// Build the live tune panel for the wheel HUD. Toggle with W. The panel
-// mutates TRACK3D_WHEEL_HUD_TUNE in place; `reapply` is called whenever a
-// control changes so the on-screen quad updates immediately.
-function buildWheelHudDebugPanel(mount, reapply) {
-  const panel = document.createElement("div");
-  Object.assign(panel.style, {
-    position: "absolute", top: "12px", right: "12px",
-    display: "none",
-    fontFamily: "JetBrains Mono, monospace",
-    fontSize: "11px",
-    color: "#e6e6ef",
-    padding: "10px 12px",
-    background: "rgba(11,11,17,0.92)",
-    border: "1px solid rgba(255,30,0,0.35)",
-    borderRadius: "4px",
-    backdropFilter: "blur(6px)",
-    WebkitBackdropFilter: "blur(6px)",
-    pointerEvents: "auto",
-    zIndex: 6,
-    width: "260px",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
-  });
-  panel.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <div style="font-weight:800;letter-spacing:0.18em;color:#ff1e00;">WHEEL HUD TUNE</div>
-      <div data-act="close" style="cursor:pointer;color:rgba(180,180,200,0.6);padding:0 4px;">×</div>
-    </div>
-    <div style="font-size:9px;color:rgba(180,180,200,0.55);letter-spacing:0.14em;margin-bottom:8px;">PRESS W TO TOGGLE</div>
-    <div data-rows></div>
-    <div style="display:flex;gap:6px;margin-top:10px;">
-      <button data-act="copy" style="flex:1;font-family:inherit;font-size:10px;background:#1a1a26;color:#e6e6ef;border:1px solid rgba(255,255,255,0.15);padding:6px;cursor:pointer;letter-spacing:0.08em;">COPY VALUES</button>
-      <button data-act="reset" style="flex:1;font-family:inherit;font-size:10px;background:#1a1a26;color:#e6e6ef;border:1px solid rgba(255,255,255,0.15);padding:6px;cursor:pointer;letter-spacing:0.08em;">RESET</button>
-    </div>
-    <div data-status style="font-size:9px;color:rgba(180,180,200,0.55);letter-spacing:0.10em;margin-top:6px;min-height:12px;"></div>
-  `;
-  mount.appendChild(panel);
-
-  const rowsEl = panel.querySelector("[data-rows]");
-  const statusEl = panel.querySelector("[data-status]");
-
-  const rows = [
-    { key: "shiftFaceX",        kind: "slider", min: -0.5, max: 0.5, step: 0.005 },
-    { key: "shiftFaceY",        kind: "slider", min: -0.5, max: 0.5, step: 0.005 },
-    { key: "sizeFaceX",         kind: "slider", min: 0.05, max: 1.0, step: 0.01 },
-    { key: "sizeFaceY",         kind: "slider", min: 0.05, max: 1.0, step: 0.01 },
-    { key: "sizeMultiplier",    kind: "slider", min: 0.2,  max: 2.5, step: 0.01 },
-    { key: "emissiveIntensity", kind: "slider", min: 0.0,  max: 2.0, step: 0.01 },
-    { key: "faceSign",          kind: "toggle", on: 1,    off: -1 },
-    { key: "flipU",             kind: "toggle", on: true, off: false },
-    { key: "flipV",             kind: "toggle", on: true, off: false },
-  ];
-
-  // Snapshot of initial defaults — used by RESET.
-  const defaults = {};
-  for (const r of rows) defaults[r.key] = TRACK3D_WHEEL_HUD_TUNE[r.key];
-
-  const refs = {};
-  for (const r of rows) {
-    const row = document.createElement("div");
-    row.style.cssText = "display:flex;align-items:center;gap:8px;margin-bottom:5px;";
-    if (r.kind === "slider") {
-      row.innerHTML = `
-        <div style="width:108px;font-size:10px;color:rgba(180,180,200,0.7);letter-spacing:0.06em;">${r.key}</div>
-        <input type="range" min="${r.min}" max="${r.max}" step="${r.step}" value="${TRACK3D_WHEEL_HUD_TUNE[r.key]}" style="flex:1;accent-color:#ff1e00;">
-        <div data-val style="width:48px;text-align:right;font-size:10px;color:#f6f6fa;font-variant-numeric:tabular-nums;">${TRACK3D_WHEEL_HUD_TUNE[r.key].toFixed(3)}</div>
-      `;
-      const input = row.querySelector("input");
-      const valEl = row.querySelector("[data-val]");
-      input.addEventListener("input", () => {
-        const v = parseFloat(input.value);
-        TRACK3D_WHEEL_HUD_TUNE[r.key] = v;
-        valEl.textContent = v.toFixed(3);
-        reapply();
-      });
-      refs[r.key] = { row, input, valEl };
-    } else {
-      row.innerHTML = `
-        <div style="width:108px;font-size:10px;color:rgba(180,180,200,0.7);letter-spacing:0.06em;">${r.key}</div>
-        <div data-btn style="flex:1;text-align:center;font-size:10px;background:#1a1a26;border:1px solid rgba(255,255,255,0.15);padding:4px;cursor:pointer;letter-spacing:0.08em;">${String(TRACK3D_WHEEL_HUD_TUNE[r.key])}</div>
-      `;
-      const btn = row.querySelector("[data-btn]");
-      btn.addEventListener("click", () => {
-        const cur = TRACK3D_WHEEL_HUD_TUNE[r.key];
-        const next = (cur === r.on) ? r.off : r.on;
-        TRACK3D_WHEEL_HUD_TUNE[r.key] = next;
-        btn.textContent = String(next);
-        reapply();
-      });
-      refs[r.key] = { row, btn };
-    }
-    rowsEl.appendChild(row);
-  }
-
-  panel.querySelector("[data-act=close]").addEventListener("click", () => {
-    panel.style.display = "none";
-  });
-
-  panel.querySelector("[data-act=copy]").addEventListener("click", () => {
-    const lines = [];
-    lines.push("const TRACK3D_WHEEL_HUD_TUNE = {");
-    for (const r of rows) {
-      const v = TRACK3D_WHEEL_HUD_TUNE[r.key];
-      const fmt = (typeof v === "number") ? v.toFixed(3) : String(v);
-      lines.push(`  ${r.key}: ${fmt},`);
-    }
-    lines.push("};");
-    const text = lines.join("\n");
-    navigator.clipboard?.writeText(text).then(
-      () => { statusEl.textContent = "COPIED · paste into track3d/constants.js"; },
-      () => { statusEl.textContent = "COPY FAILED · see console"; console.log(text); }
-    );
-    setTimeout(() => { statusEl.textContent = ""; }, 2400);
-  });
-
-  panel.querySelector("[data-act=reset]").addEventListener("click", () => {
-    for (const r of rows) {
-      const v = defaults[r.key];
-      TRACK3D_WHEEL_HUD_TUNE[r.key] = v;
-      const ref = refs[r.key];
-      if (r.kind === "slider") {
-        ref.input.value = v;
-        ref.valEl.textContent = v.toFixed(3);
-      } else {
-        ref.btn.textContent = String(v);
-      }
-    }
-    reapply();
-    statusEl.textContent = "RESET";
-    setTimeout(() => { statusEl.textContent = ""; }, 1200);
-  });
-
-  const toggle = () => {
-    panel.style.display = (panel.style.display === "none") ? "block" : "none";
-  };
-
-  return { root: panel, toggle };
-}
-
 function paintLimiter(ctx, W, H) {
   // Flash the whole screen between yellow and dark every 250 ms.
   const phase = Math.floor(performance.now() / 250) % 2 === 0;
@@ -729,7 +589,6 @@ function updatePovHud(hud, standing, compoundInfo) {
 
 export {
   buildWheelHud,
-  buildWheelHudDebugPanel,
   buildPovHud,
   updatePovHud,
 };

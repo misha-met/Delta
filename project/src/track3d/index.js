@@ -1,4 +1,3 @@
-export * from "./constants.js";
 export * from "./textures.js";
 export * from "./labels.js";
 export * from "./atmosphere.js";
