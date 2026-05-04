@@ -1,0 +1,10 @@
+fastf1
+fastapi>=0.115
+numpy
+orjson>=3.10
+pandas
+psutil>=5.9
+pyarrow>=14
+scipy
+uvicorn[standard]>=0.30
+websockets>=12
