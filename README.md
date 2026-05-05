@@ -12,7 +12,8 @@
     <a href="#prerequisites">Prerequisites</a> •
     <a href="#quick-start">Quick Start</a> •
     <a href="#panel-map">Panel Map</a> •
-    <a href="#technical-notes">Technical Notes</a>
+    <a href="#technical-notes">Technical Notes</a> •
+    <a href="https://deepwiki.com/misha-met/Delta">Wiki</a>
   </p>
 
 </div>
