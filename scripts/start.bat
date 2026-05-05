@@ -73,20 +73,25 @@ if not exist "project\node_modules" (
     echo   OK  node_modules already present - skipping npm install
 )
 
-:: ── 5. Frontend — build (skipped if bundle already exists) ───────────────────
+:: ── 5. Frontend — build (always run; esbuild is fast) ───────────────────────
 echo.
-echo [5/5] Frontend bundle...
+echo [5/5] Building frontend bundle...
+
+cd project
+call npm run build
+if errorlevel 1 (
+    echo   ERROR: npm run build failed.
+    echo   Try: cd project ^&^& rmdir /s /q node_modules ^&^& del package-lock.json ^&^& npm install ^&^& npm run build
+    echo   If antivirus blocked esbuild.exe, allowlist project\node_modules\@esbuild and retry.
+    pause & exit /b 1
+)
+cd ..
 
 if not exist "project\dist\bundle.js" (
-    cd project
-    npm run build
-    if errorlevel 1 ( echo   ERROR: npm run build failed & pause & exit /b 1 )
-    echo   OK  Frontend bundle built
-    cd ..
-) else (
-    echo   OK  Bundle already exists - skipping build
-    echo   TIP: Delete project\dist\bundle.js to force a rebuild next run.
+    echo   ERROR: Build reported success but project\dist\bundle.js is missing.
+    pause & exit /b 1
 )
+echo   OK  Frontend bundle built
 
 :: ── 6. Launch ──────────────────────────────────────────────────────────────────
 echo.

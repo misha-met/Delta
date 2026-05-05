@@ -71,12 +71,26 @@ def build_app(year, round_number, session_type: str, cache_dir: Path) -> FastAPI
     project_dir = Path(__file__).resolve().parent.parent.parent / "project"
     if project_dir.is_dir():
         bundle_path = project_dir / "dist" / "bundle.js"
-        bundle_sig = "missing"
-        if bundle_path.is_file():
-            try:
-                bundle_sig = hashlib.md5(bundle_path.read_bytes()).hexdigest()[:12]
-            except Exception:
-                bundle_sig = "unreadable"
+        if not bundle_path.is_file():
+            raise SystemExit(
+                "\n"
+                "  ╔══════════════════════════════════════════════════════════════╗\n"
+                "  ║  ERROR: frontend bundle is missing.                          ║\n"
+                "  ║                                                              ║\n"
+                f"  ║  Expected: {str(bundle_path):<50}║\n"
+                "  ║                                                              ║\n"
+                "  ║  Build it with:                                              ║\n"
+                "  ║      cd project && npm install && npm run build              ║\n"
+                "  ║                                                              ║\n"
+                "  ║  On Windows, if npm run build fails, antivirus may be        ║\n"
+                "  ║  blocking esbuild. Allowlist project\\node_modules\\@esbuild   ║\n"
+                "  ║  or use the scripts\\start.bat helper.                        ║\n"
+                "  ╚══════════════════════════════════════════════════════════════╝\n"
+            )
+        try:
+            bundle_sig = hashlib.md5(bundle_path.read_bytes()).hexdigest()[:12]
+        except Exception:
+            bundle_sig = "unreadable"
         app.mount("/app", StaticFiles(directory=str(project_dir), html=True), name="app")
         print(f"[pit_wall] bundle {bundle_sig}  static -> {project_dir}")
 
