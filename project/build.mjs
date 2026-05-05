@@ -1,6 +1,7 @@
 import * as esbuild from "esbuild";
 import { cpSync, mkdirSync, existsSync } from "fs";
 import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 
 const isWatch = process.argv.includes("--watch");
 
@@ -8,7 +9,7 @@ const isWatch = process.argv.includes("--watch");
 // The server mounts project/ at /app/, so assets/f1-car.glb is served at
 // /app/assets/f1-car.glb which matches the loader paths in track3d/cars.js.
 function copyAssets() {
-  const projectDir = dirname(import.meta.url.replace("file://", ""));
+  const projectDir = dirname(fileURLToPath(import.meta.url));
   const assetsDir = join(projectDir, "assets");
   const sourceAssetsDir = join(projectDir, "..", "assets", "models");
   if (!existsSync(assetsDir)) mkdirSync(assetsDir, { recursive: true });

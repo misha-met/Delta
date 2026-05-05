@@ -65,7 +65,7 @@ echo [4/5] Frontend dependencies...
 
 if not exist "project\node_modules" (
     cd project
-    npm install --silent
+    call npm install --silent
     if errorlevel 1 ( echo   ERROR: npm install failed & pause & exit /b 1 )
     echo   OK  npm packages installed
     cd ..
@@ -79,7 +79,7 @@ echo [5/5] Frontend bundle...
 
 if not exist "project\dist\bundle.js" (
     cd project
-    npm run build
+    call npm run build
     if errorlevel 1 ( echo   ERROR: npm run build failed & pause & exit /b 1 )
     echo   OK  Frontend bundle built
     cd ..
